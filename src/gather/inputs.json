@@ -1,0 +1,18 @@
+{
+  "articles": {
+    "url": "https://raypeat.com/articles/",
+    "selector": "#p1 a"
+  },
+  "books": [],
+  "pages": [
+    "https://raypeatforum.com/wiki/index.php/Ray_Peat_Email_Exchanges"
+  ],
+  "youtube": {
+    "minDurationSeconds": 1200,
+    "lists": [
+      "https://www.youtube.com/@RayPeatClips",
+      "https://www.youtube.com/@raypeat3365",
+      "https://www.youtube.com/playlist?list=TLGGj9cpCCAUB1YyNjA2MjAyMw"
+    ]
+  }
+}

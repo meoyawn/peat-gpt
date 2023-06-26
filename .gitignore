@@ -1,0 +1,6 @@
+node_modules/
+gen/
+.idea/
+yarn-error.log
+tsconfig.tsbuildinfo
+data/

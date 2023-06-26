@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "incremental": true,
+    "lib": ["DOM", "ES2020"],
+    "target": "ES2020",
+    "moduleResolution": "node",
+    "types": ["bun-types"],
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/", "gen/"],
+  "exclude": ["node_modules/"]
+}
