@@ -4,8 +4,9 @@
     "selector": "#p1 a"
   },
   "books": [],
-  "pages": [
-    "https://raypeatforum.com/wiki/index.php/Ray_Peat_Email_Exchanges"
+  "web": [
+    "https://raypeatforum.com/wiki/index.php/Ray_Peat_Email_Exchanges",
+    "https://archive.org/details/mega-master-ray-newsletter"
   ],
   "youtube": {
     "minDurationSeconds": 1200,
