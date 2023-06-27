@@ -2,7 +2,7 @@ import { exists, writeFile } from "fs/promises"
 import { join } from "path"
 import { fromHtml } from "hast-util-from-html"
 import { selectAll } from "hast-util-select"
-import { Element } from "hast-util-select/lib"
+import { type Element } from "hast-util-select/lib"
 import { filenameWithoutExtension, tikaText } from "./common"
 import inputs from "./inputs.json"
 

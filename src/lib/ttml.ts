@@ -44,7 +44,7 @@ const ttmlToMillis = (timestamp: TtmlTS): number => {
 export const joinEvery = (
   cues: ReadonlyArray<Readonly<TtmlCue>>,
   millis: number,
-  separator: string = " ",
+  separator = " ",
 ): ReadonlyArray<Readonly<TtmlCue>> => {
   const ret = Array<TtmlCue>()
   if (!cues.length) return ret
