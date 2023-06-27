@@ -2,6 +2,7 @@ import { spawn } from "child_process"
 
 export const cliText = async (...cmd: ReadonlyArray<string>): Promise<string> =>
   new Promise((resolve, reject) => {
+    // eslint-disable-next-line no-console
     console.log(cmd.join(" "))
 
     const [command, ...args] = cmd
@@ -18,7 +19,7 @@ export const cliText = async (...cmd: ReadonlyArray<string>): Promise<string> =>
       if (code === 0) {
         resolve(data.trim())
       } else {
-        reject(error || `'${cmd.join(" ")}' exit code ${code}`)
+        reject(error || `'${cmd.join(" ")}' exit code ${String(code)}`)
       }
     })
   })

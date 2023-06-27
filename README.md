@@ -1,24 +1,20 @@
 # Ray Peat
 
-- Content extractor
+- Corpus gathering
     - html & pdf https://github.com/apache/tika
-    - youtube https://stackoverflow.com/a/74935253/1032286
-- Embedding model
+    - YouTube https://stackoverflow.com/a/74935253/1032286
+- Chunking
+    - text https://spacy.io
+    - YouTube either chunk every ~minute, or https://github.com/Felflare/rpunct
+- Embeddings
     - https://cloud.google.com/vertex-ai/docs/generative-ai/embeddings/get-text-embeddings
     - https://platform.openai.com/docs/guides/embeddings
-- Vector store
+- Vector search
     - https://github.com/pgvector/pgvector
-- Language model
+    - https://www.pinecone.io
+    - https://redis.io/docs/stack/search/reference/vectors
+    - https://github.com/asg017/sqlite-vss
+- LLMs
     - https://chat.openai.com/?model=gpt-4
     - https://console.anthropic.com/chat
-
-## server deps:
-
-- jdk17
-- python3
-- tesseract-ocr
-
-## db deps:
-
-- postgresql
-- pgvector
+ 

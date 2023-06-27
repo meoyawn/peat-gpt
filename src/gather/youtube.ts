@@ -25,7 +25,7 @@ const writeSubs = async (videoURL: string, dir: string) => {
   await writeFile(join(dir, `${v}.${lang}.${ext}`), ttml)
 }
 
-export const downloadYT = async (dir: string) => {
+export const downloadYT = async (dir: string): Promise<void> => {
   const { lists, minDurationSeconds } = inputs.youtube
 
   for (const url of lists) {

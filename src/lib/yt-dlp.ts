@@ -37,10 +37,10 @@ export async function ytDlpInfo(url: string): Promise<Info> {
     "--playlist-end",
     "1",
   )
-  return JSON.parse(s)
+  return JSON.parse(s) as Info
 }
 
 export async function ytDlpPlaylist(url: string): Promise<FlatPlaylist> {
   const s = await cliText("yt-dlp", url, "-J", "--flat-playlist")
-  return JSON.parse(s)
+  return JSON.parse(s) as FlatPlaylist
 }
