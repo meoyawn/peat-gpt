@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "fs/promises"
-import { expect, test } from "bun:test"
+import { expect, test } from "vitest"
 import { downloadArticles } from "./articles"
 
 test.skip(

@@ -1,5 +1,6 @@
-import { exists, writeFile } from "fs/promises"
+import { writeFile } from "fs/promises"
 import { join } from "path"
+import { exists } from "../lib/node"
 import { filenameWithoutExtension, tikaText } from "./common"
 import inputs from "./inputs.json"
 

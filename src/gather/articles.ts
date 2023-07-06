@@ -1,8 +1,9 @@
-import { exists, writeFile } from "fs/promises"
+import { writeFile } from "fs/promises"
 import { join } from "path"
 import { fromHtml } from "hast-util-from-html"
 import { selectAll } from "hast-util-select"
 import { type Element } from "hast-util-select/lib"
+import { exists } from "../lib/node"
 import { filenameWithoutExtension, tikaText } from "./common"
 import inputs from "./inputs.json"
 

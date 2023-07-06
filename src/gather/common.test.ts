@@ -1,4 +1,4 @@
-import { expect, test } from "bun:test"
+import { expect, test } from "vitest"
 import { cliText } from "./common"
 
 test("cli", async () => {

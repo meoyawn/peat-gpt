@@ -1,5 +1,6 @@
-import { exists, writeFile } from "fs/promises"
+import { writeFile } from "fs/promises"
 import { join } from "path"
+import { exists } from "../lib/node"
 import { ytDlpInfo, ytDlpPlaylist, type Info } from "../lib/yt-dlp"
 import inputs from "./inputs.json"
 

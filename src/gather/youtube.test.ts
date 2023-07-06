@@ -1,6 +1,6 @@
 import { readdir, readFile, rm } from "fs/promises"
 import { join } from "path"
-import { test } from "bun:test"
+import { test } from "vitest"
 import { removeExtension } from "./common"
 import inputs from "./inputs.json"
 import { downloadYT } from "./youtube"

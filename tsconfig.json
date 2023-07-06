@@ -3,13 +3,12 @@
     "strict": true,
     "noEmit": true,
     "incremental": true,
-    "lib": ["DOM", "ES2020"],
-    "target": "ES2020",
+    "lib": ["DOM", "ES2022"],
+    "target": "ES2022",
     "moduleResolution": "node",
-    "types": ["bun-types"],
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/", "gen/"],
+  "include": ["src/"],
   "exclude": ["node_modules/"]
 }
