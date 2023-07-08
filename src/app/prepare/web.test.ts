@@ -138,8 +138,9 @@ test(
       const url = getURL(file)
       const max3k = splitArray(
         chunks.map(x => x.excerpt),
-        2000,
+        2500,
       )
+
       const acc: Array<WebEmbedding> = []
       for (let i = 0; i < max3k.length; i++) {
         console.log(i, max3k.length)
@@ -148,6 +149,7 @@ test(
         acc.push(...xs)
 
         if (i !== max3k.length - 1) {
+          /** one min */
           await delay(61_000)
         }
       }
