@@ -1,8 +1,9 @@
 import { writeFile } from "fs/promises"
 import { join } from "path"
-import { exists } from "../lib/node"
-import { filenameWithoutExtension, tikaText } from "./common"
+import { exists } from "../../lib/node"
+import { filenameWithoutExtension } from "./common"
 import inputs from "./inputs.json"
+import { tikaText } from "../../lib/tika"
 
 export const downloadBooks = async (dir: string): Promise<void> => {
   for (const url of inputs.books) {

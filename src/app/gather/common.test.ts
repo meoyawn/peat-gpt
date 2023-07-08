@@ -1,5 +1,6 @@
 import { expect, test } from "vitest"
-import { cliText } from "./common"
+
+import { cliText } from "../../lib/node"
 
 test("cli", async () => {
   expect(await cliText("true")).toEqual("")

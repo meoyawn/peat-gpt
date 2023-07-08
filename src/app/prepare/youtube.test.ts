@@ -2,9 +2,9 @@ import { mkdir, readdir, readFile, writeFile } from "fs/promises"
 import { join } from "path"
 import { test } from "vitest"
 import { removeExtension } from "../gather/common"
-import { exists } from "../lib/node"
-import { joinEvery, parseTTML } from "../lib/ttml"
-import { EMBEDDING_MODEL, openAiApi } from "./embed"
+import { exists } from "../../lib/node"
+import { joinEvery, parseTTML } from "../../lib/ttml"
+import { openAiEmbed } from "./embed"
 
 const ONE_MINUTE_MILLIS = 60_000
 
@@ -62,18 +62,15 @@ test(
       const text = await readFile(join(inp, file), "utf-8")
       const chunks: ReadonlyArray<PreparedChunk> = JSON.parse(text)
 
-      const res = await openAiApi.createEmbedding({
-        model: EMBEDDING_MODEL,
-        input: chunks.map(x => x.excerpt),
-      })
+      const { data } = await openAiEmbed(chunks.map(({ excerpt }) => excerpt))
 
-      const arr = res.data.map(
+      const arr = data.map(
         ({ embedding }, i) =>
           ({
             ...chunks[i],
             embedding,
             url: `https://www.youtube.com/watch?v=${vid}`,
-          } satisfies EmbeddedChunk),
+          }) satisfies EmbeddedChunk,
       )
       await writeFile(outPath, JSON.stringify(arr))
     }

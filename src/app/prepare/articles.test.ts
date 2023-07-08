@@ -2,16 +2,15 @@ import { mkdir, readdir, readFile, writeFile } from "fs/promises"
 import { join } from "path"
 import { expect, test } from "vitest"
 import { removeExtension } from "../gather/common"
-import { exists } from "../lib/node"
-import { EMBEDDING_MODEL, openAiApi } from "./embed"
-import { ResponseError } from "../../gen/openai"
+import { exists } from "../../lib/node"
+import { openAiEmbed } from "./embed"
 
 interface Chunk {
   excerpt: string
   url: string
 }
 
-const MAX_CHUNK_LENGTH = 32_000
+const MAX_CHUNK_LEN = 32_000
 
 const splitOnSentenceMaxLen = (
   text: string,
@@ -99,9 +98,10 @@ test("chunk articles", async () => {
 
     const obj = text
       .split("\n")
-      .flatMap(x => splitOnSentenceMaxLen(x, MAX_CHUNK_LENGTH))
+      .flatMap(x => splitOnSentenceMaxLen(x, MAX_CHUNK_LEN))
+      .filter(x => x.length)
       .map(x => {
-        expect(x.length).toBeLessThanOrEqual(MAX_CHUNK_LENGTH)
+        expect(x.length).toBeLessThanOrEqual(MAX_CHUNK_LEN)
         return { excerpt: x, url } satisfies Chunk
       })
 
@@ -112,8 +112,6 @@ test("chunk articles", async () => {
 interface EmbeddedChunk extends Chunk {
   embedding: ReadonlyArray<number>
 }
-
-const isASCII = (s: string): boolean => /^[\x00-\x7F]*$/.test(s)
 
 test(
   "embed articles",
@@ -129,29 +127,27 @@ test(
       const text = await readFile(join(chunksDir, file), "utf-8")
       const chunks: ReadonlyArray<Chunk> = JSON.parse(text)
 
-      const input = chunks.map(x => x.excerpt)
-
-      console.log(file, input)
-
-      expect(input.every(isASCII)).toBe(true)
-
-      try {
-        const res = await openAiApi.createEmbedding({
-          model: EMBEDDING_MODEL,
-          input,
-        })
-        const arr = res.data.map(
-          ({ embedding }, i) =>
-            ({ ...chunks[i], embedding }) satisfies EmbeddedChunk,
-        )
-        await writeFile(outPath, JSON.stringify(arr))
-      } catch (e) {
-        if (e instanceof ResponseError) {
-          console.error(await e.response.text())
-        }
-        throw e
-      }
+      const { data } = await openAiEmbed(chunks.map(({ excerpt }) => excerpt))
+      const arr = data.map(
+        ({ embedding }, i) =>
+          ({ ...chunks[i], embedding }) satisfies EmbeddedChunk,
+      )
+      await writeFile(outPath, JSON.stringify(arr))
     }
   },
   { timeout: 1_000_000 },
 )
+
+const clean = async (dir: string) => {
+  for (const file of await readdir(dir)) {
+    const s = await readFile(join(dir, file), "utf-8")
+    const chunks: ReadonlyArray<Chunk> = JSON.parse(s)
+    const json = chunks.filter(x => x.excerpt.trim().length)
+    await writeFile(join(dir, file), JSON.stringify(json, null, 2))
+  }
+}
+
+test.skip("clean", async () => {
+  await clean("data/articles/chunks/")
+  await clean("data/articles/embeddings/")
+})

@@ -1,4 +1,4 @@
-import { cliText } from "../gather/common"
+import { cliText } from "./node"
 
 interface Caption {
   ext: string

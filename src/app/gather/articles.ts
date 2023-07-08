@@ -3,9 +3,10 @@ import { join } from "path"
 import { fromHtml } from "hast-util-from-html"
 import { selectAll } from "hast-util-select"
 import { type Element } from "hast-util-select/lib"
-import { exists } from "../lib/node"
-import { filenameWithoutExtension, tikaText } from "./common"
+import { exists } from "../../lib/node"
+import { filenameWithoutExtension } from "./common"
 import inputs from "./inputs.json"
+import { tikaText } from "../../lib/tika"
 
 const getHref = (a: Element): string => {
   if (!a.properties) throw new Error(JSON.stringify(a))

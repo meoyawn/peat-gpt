@@ -1,7 +1,7 @@
 import { writeFile } from "fs/promises"
 import { join } from "path"
-import { exists } from "../lib/node"
-import { ytDlpInfo, ytDlpPlaylist, type Info } from "../lib/yt-dlp"
+import { exists } from "../../lib/node"
+import { ytDlpInfo, ytDlpPlaylist, type Info } from "../../lib/yt-dlp"
 import inputs from "./inputs.json"
 
 const subtitleURL = (info: Info, lang: "en", ext: "ttml"): string | undefined =>
