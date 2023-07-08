@@ -3,7 +3,7 @@ import { join } from "path"
 import { expect, test } from "vitest"
 import { removeExtension } from "../gather/common"
 import { exists } from "../../lib/node"
-import { openAiEmbed } from "./embed"
+import { openAiEmbed } from "../OpenAI"
 
 interface Chunk {
   excerpt: string

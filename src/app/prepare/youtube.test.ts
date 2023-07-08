@@ -1,12 +1,13 @@
+import { randomUUID } from "crypto"
 import { mkdir, readdir, readFile, writeFile } from "fs/promises"
 import { join } from "path"
 import { test } from "vitest"
-import { removeExtension } from "../gather/common"
 import { exists } from "../../lib/node"
 import { joinEvery, parseTTML } from "../../lib/ttml"
-import { openAiEmbed } from "./embed"
+import { removeExtension } from "../gather/common"
+import { openAiEmbed } from "../OpenAI"
 
-const ONE_MINUTE_MILLIS = 60_000
+const CHUNK_LEN_MILLIS = 180_000
 
 interface PreparedChunk {
   excerpt: string
@@ -19,7 +20,7 @@ const chunkSubs = async (
 ): Promise<ReadonlyArray<PreparedChunk>> =>
   joinEvery(
     parseTTML(await readFile(ttmlPath, "utf-8")).tt.body.div.p,
-    ONE_MINUTE_MILLIS,
+    CHUNK_LEN_MILLIS,
   ).map(x => ({
     excerpt: x.text,
     begin: x.begin,
@@ -43,6 +44,7 @@ test("chunk youtube", async () => {
 })
 
 interface EmbeddedChunk extends PreparedChunk {
+  id: string
   embedding: ReadonlyArray<number>
   url: string
 }
@@ -62,7 +64,7 @@ test(
       const text = await readFile(join(inp, file), "utf-8")
       const chunks: ReadonlyArray<PreparedChunk> = JSON.parse(text)
 
-      const { data } = await openAiEmbed(chunks.map(({ excerpt }) => excerpt))
+      const { data } = await openAiEmbed(chunks.map(x => x.excerpt))
 
       const arr = data.map(
         ({ embedding }, i) =>
@@ -70,7 +72,8 @@ test(
             ...chunks[i],
             embedding,
             url: `https://www.youtube.com/watch?v=${vid}`,
-          }) satisfies EmbeddedChunk,
+            id: randomUUID(),
+          } satisfies EmbeddedChunk),
       )
       await writeFile(outPath, JSON.stringify(arr))
     }

@@ -11,7 +11,7 @@
     "fast-xml-parser": "^4.2.5",
     "hast-util-from-html": "^1.0.2",
     "hast-util-select": "^5.0.5",
-    "hast-util-to-text": "^3.1.2"
+    "pinecone-ts-client": "^0.0.5"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^4.0.0",
@@ -19,7 +19,7 @@
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",
     "eslint": "^8.43.0",
-    "prettier": "^3.0.0",
+    "prettier": "^2.8.8",
     "prettier-plugin-packagejson": "^2.4.3",
     "typescript": "^5.1.3",
     "vitest": "^0.33.0"

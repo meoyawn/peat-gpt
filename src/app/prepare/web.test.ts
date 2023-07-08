@@ -1,9 +1,11 @@
-import { test } from "vitest"
-import { join } from "path"
+import { randomUUID } from "crypto"
 import { mkdir, readdir, readFile, writeFile } from "fs/promises"
-import { openAiEmbed } from "./embed"
-import { exists } from "../../lib/node"
+import { join } from "path"
+import { test } from "vitest"
 import { ResponseError } from "../../../gen/openai"
+import { exists } from "../../lib/node"
+import { batchArray } from "../../lib/ts"
+import { openAiEmbed } from "../OpenAI"
 
 const CHUNKS_DIR = "data/web/chunks/"
 const EMBEDDINGS_DIR = "data/web/embeddings/"
@@ -13,6 +15,7 @@ interface WebChunk {
 }
 
 interface WebEmbedding extends WebChunk {
+  id: string
   url: string
   embedding: ReadonlyArray<number>
 }
@@ -28,7 +31,7 @@ test("chunk emails", async () => {
       const trimmed = x.trim()
       return trimmed ? [trimmed] : []
     })
-    .map(excerpt => ({ excerpt }) satisfies WebChunk)
+    .map(excerpt => ({ excerpt } satisfies WebChunk))
   await writeFile(
     join(CHUNKS_DIR, `${EMAILS_SLUG}.json`),
     JSON.stringify(arr, null, 2),
@@ -54,11 +57,16 @@ const batched = async (
 ): Promise<ReadonlyArray<WebEmbedding>> => {
   try {
     const { data } = await openAiEmbed(input)
-    return data.map(({ embedding }, i) => ({
-      excerpt: input[i],
-      url,
-      embedding,
-    }))
+    return data.map(({ embedding }, i) => {
+      if (!embedding) throw new Error(JSON.stringify(data))
+
+      return {
+        id: randomUUID(),
+        excerpt: input[i],
+        url,
+        embedding,
+      }
+    })
   } catch (e) {
     if (e instanceof ResponseError) {
       console.log(input)
@@ -68,54 +76,15 @@ const batched = async (
   }
 }
 
-const lineByLine = async (
-  input: Array<string>,
-  url: string,
-): Promise<ReadonlyArray<WebEmbedding>> => {
-  const ret: Array<WebEmbedding> = []
-  for (let i = 0; i < input.length; i++) {
-    console.log(i, input.length)
-
-    const excerpt = input[i]
-
-    try {
-      const { data } = await openAiEmbed(excerpt)
-      ret.push({
-        excerpt,
-        url,
-        embedding: data[0].embedding,
-      })
-    } catch (e) {
-      if (e instanceof ResponseError) {
-        console.log(excerpt)
-        console.error(await e.response.text())
-      }
-      throw e
-    }
-  }
-  return ret
-}
-
 const delay = async (ms: number): Promise<void> =>
   new Promise(resolve => setTimeout(resolve, ms))
 
-const splitArray = <T>(
-  arr: ReadonlyArray<T>,
-  len: number,
-): ReadonlyArray<ReadonlyArray<T>> => {
-  const ret: Array<ReadonlyArray<T>> = []
-  for (let i = 0; i < arr.length; i += len) {
-    ret.push(arr.slice(i, i + len))
-  }
-  return ret
-}
-
-test.skip("sanitize chunks", async () => {
+test("sanitize chunks", async () => {
   const clean = async (dir: string) => {
     for (const file of await readdir(dir)) {
       const s = await readFile(join(dir, file), "utf-8")
       const chunks: ReadonlyArray<WebChunk> = JSON.parse(s)
-      const json = chunks.filter(x => x.excerpt.trim().length)
+      const json = chunks.filter(x => x.excerpt.trim().length > 100)
       await writeFile(join(dir, file), JSON.stringify(json, null, 2))
     }
   }
@@ -136,9 +105,9 @@ test(
       const chunks: ReadonlyArray<WebChunk> = JSON.parse(s)
 
       const url = getURL(file)
-      const max3k = splitArray(
+      const max3k = batchArray(
         chunks.map(x => x.excerpt),
-        2500,
+        2000,
       )
 
       const acc: Array<WebEmbedding> = []
@@ -148,8 +117,8 @@ test(
         const xs = await batched(max3k[i], url)
         acc.push(...xs)
 
-        if (i !== max3k.length - 1) {
-          /** one min */
+        if (i < max3k.length - 1) {
+          /** one min becase 1_000_000 tokens per minute */
           await delay(61_000)
         }
       }
