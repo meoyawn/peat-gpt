@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto"
 import { readdir, readFile, writeFile } from "fs/promises"
 import { join } from "path"
-import { expect, test } from "vitest"
+import { test } from "vitest"
 import { ChatCompletionRequestMessage } from "../../../gen/openai"
 import {
   Configuration,
@@ -32,55 +32,49 @@ const DATA_DIR = "data/"
 const INIT_PROMPT = `
 Your role is to emulate Dr. Ray Peat by answering user queries based on his writings.
 With every user question, a corresponding excerpt from Dr. Peat's works will be shared.
-Use only the relevant information from the given context to form your response.
+Use ONLY the relevant information from the given context to form your response.
 If a previous conversation or its relevant context can aid in answering the question, feel free to incorporate it.
 
-Your responses should be strictly grounded in the provided context and previous discussions.
-If the query cannot be answered from these sources, kindly state "I don't know" or a similar response.
+Your responses MUST be strictly grounded in the provided context and previous discussions.
+If the query cannot be answered from these contexts, state "I don't know" or similar.
 
-Attribute your responses to the corresponding source from the provided context. Include the full URL in the citation.
-In case of YouTube as the source, make sure to append the "?t=%begin_seconds%" query parameter to pinpoint the exact time stamp (e.g., https://www.youtube.com/watch?v=nW3uRVJ24eU&t=378s).
+You MUST mention sources for everything you say:
+- for books mention title and page number
+- for web pages mention URL
+- for YouTube mention URL, add "?t=Ns" (take "begin" from context, convert HH:MM:SS.XXX to seconds) query param (e.g., https://www.youtube.com/watch?v=nW3uRVJ24eU&t=378s).
 `
 
-const INIT = {
+const INIT: Readonly<ChatCompletionRequestMessage> = {
   role: "system",
   content: INIT_PROMPT,
-} as const
+}
 
 test(
   "query",
   async () => {
-    const query = "butter with potatoes"
+    const query = "coffee stained teeth, what to do?"
 
-    const userQuestion: ChatCompletionRequestMessage = {
+    const question: ChatCompletionRequestMessage = {
       role: "user",
       content: query,
     }
-    console.log(userQuestion)
+    console.log(question)
 
     const { data } = await openAiEmbed(query)
     const { matches } = await pineconeAPI.query({
       vector: data[0].embedding,
-      topK: 10,
+      topK: 5,
       includeMetadata: true,
     })
-    if (!matches) expect.fail("no pinecone matches")
+    if (!matches?.length) throw new Error("no pinecone matches")
+    const ctx = matches.map(x => x.metadata)
+    console.log(JSON.stringify(matches, null, 2))
+    const context: ChatCompletionRequestMessage = {
+      role: "system",
+      content: `Relevant info from Ray Peat's work: ${JSON.stringify(ctx)}`,
+    }
 
-    const context = matches.map(x => x.metadata)
-    console.log(context)
-
-    console.log(
-      await openAiChat([
-        INIT,
-        userQuestion,
-        {
-          role: "system",
-          content: `Relevant info from Ray Peat's works: ${JSON.stringify(
-            context,
-          )}`,
-        },
-      ]),
-    )
+    console.log(await openAiChat([INIT, question, context]))
   },
   {
     timeout: 1_000_000,
@@ -145,7 +139,7 @@ const toPinecone = ({
 test(
   "upsert DIRS",
   async () => {
-    for (const dir of ["web", "youtube"]) {
+    for (const dir of ["youtube"]) {
       const embeddingsDir = join(DATA_DIR, dir, "embeddings")
       for (const file of await readdir(embeddingsDir)) {
         const jsonPath = join(embeddingsDir, file)

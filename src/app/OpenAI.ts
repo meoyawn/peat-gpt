@@ -12,7 +12,6 @@ const openAiApi = new OpenAIApi(
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       Authorization: `Bearer ${process.env.VITE_OPENAPI_KEY}`,
     },
-    apiKey: process.env.VITE_OPENAPI_KEY,
   }),
 )
 
@@ -32,7 +31,7 @@ export const openAiChat = async (
   const { choices } = await openAiApi.createChatCompletion({
     model: "gpt-3.5-turbo-16k",
     messages: messages as Array<ChatCompletionRequestMessage>,
-    temperature: 0.1,
+    temperature: 0.05,
   })
   const [{ message }] = choices
   if (!message) throw new Error(JSON.stringify({ messages, choices }))

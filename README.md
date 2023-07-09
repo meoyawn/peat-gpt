@@ -4,8 +4,8 @@
     - html & pdf https://github.com/apache/tika
     - YouTube https://stackoverflow.com/a/74935253/1032286
 - Chunking
-    - text https://spacy.io
-    - YouTube either chunk every ~minute, or https://github.com/Felflare/rpunct
+    - text (use lookahead regex for punctuation, much faster than spaCy)
+    - YouTube chunk every ~3 minutes
 - Embeddings
     - https://cloud.google.com/vertex-ai/docs/generative-ai/embeddings/get-text-embeddings
     - https://platform.openai.com/docs/guides/embeddings
