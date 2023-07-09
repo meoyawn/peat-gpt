@@ -1,7 +1,7 @@
 {
   "articles": {
     "url": "https://raypeat.com/articles/",
-    "selector": "#p1 a"
+    "selector": ".posted a"
   },
   "books": [],
   "web": [

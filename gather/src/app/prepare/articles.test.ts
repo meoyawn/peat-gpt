@@ -1,8 +1,9 @@
+import { randomUUID } from "crypto"
 import { mkdir, readdir, readFile, writeFile } from "fs/promises"
 import { join } from "path"
 import { expect, test } from "vitest"
-import { removeExtension } from "../gather/common"
 import { exists } from "../../lib/node"
+import { removeExtension } from "../gather/common"
 import { openAiEmbed } from "../OpenAI"
 
 interface Chunk {
@@ -110,6 +111,7 @@ test("chunk articles", async () => {
 })
 
 interface EmbeddedChunk extends Chunk {
+  id: string
   embedding: ReadonlyArray<number>
 }
 
@@ -124,13 +126,19 @@ test(
       const outPath = join(outDir, file)
       if (await exists(outPath)) continue
 
-      const text = await readFile(join(chunksDir, file), "utf-8")
+      const inPath = join(chunksDir, file)
+      const text = await readFile(inPath, "utf-8")
       const chunks: ReadonlyArray<Chunk> = JSON.parse(text)
+      console.log(inPath, chunks.length)
 
       const { data } = await openAiEmbed(chunks.map(({ excerpt }) => excerpt))
       const arr = data.map(
         ({ embedding }, i) =>
-          ({ ...chunks[i], embedding }) satisfies EmbeddedChunk,
+          ({
+            ...chunks[i],
+            embedding,
+            id: randomUUID(),
+          } satisfies EmbeddedChunk),
       )
       await writeFile(outPath, JSON.stringify(arr))
     }

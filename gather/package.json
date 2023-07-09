@@ -1,0 +1,15 @@
+{
+  "name": "PeatGTP-gather",
+  "version": "0.0.1",
+  "private": true,
+  "sideEffects": false,
+  "scripts": {
+    "lint": "eslint src/ --fix",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.2.5",
+    "hast-util-from-html": "^1.0.2",
+    "hast-util-select": "^5.0.5"
+  }
+}

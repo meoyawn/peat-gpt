@@ -1,8 +1,37 @@
 import { readFile, writeFile } from "fs/promises"
+import { join } from "path"
+import { fromHtml } from "hast-util-from-html"
+import { selectAll } from "hast-util-select"
+import { Element } from "hast-util-select/lib"
 import { expect, test } from "vitest"
-import { downloadArticles } from "./articles"
+import { exists } from "../../lib/node"
+import { tikaText } from "../../lib/tika"
+import { filenameWithoutExtension } from "./common"
+import inputs from "./inputs.json"
 
-test.skip(
+const getHref = (a: Element): string => {
+  if (!a.properties) throw new Error(JSON.stringify(a))
+  const href = a.properties.href
+
+  if (typeof href !== "string") throw new Error(JSON.stringify(a))
+  return href.replace("http://", "https://")
+}
+
+const downloadArticles = async (dir: string): Promise<void> => {
+  const { articles } = inputs
+  const r = await fetch(articles.url)
+  const html = await r.text()
+  const anchors = selectAll(articles.selector, fromHtml(html)).map(getHref)
+
+  for (const url of anchors) {
+    const file = join(dir, `${filenameWithoutExtension(new URL(url))}.txt`)
+    if (await exists(file)) continue
+
+    await writeFile(file, await tikaText(url))
+  }
+}
+
+test(
   "download",
   async () => {
     await downloadArticles("data/articles/")
@@ -58,7 +87,7 @@ const articleTypes = [
   },
 ]
 
-test("fix broken articles", async () => {
+test.skip("fix broken articles", async () => {
   for (const { articles, replacements, lineCountLimit } of articleTypes) {
     for (const article of articles) {
       const text = await readFile(`data/articles/${article}.txt`, "utf-8")
