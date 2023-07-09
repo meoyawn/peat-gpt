@@ -1,4 +1,4 @@
-/** @type {import('@remix-run/dev').AppConfig} */
+/** @type {import("@remix-run/dev").AppConfig} */
 export default {
   devServerBroadcastDelay: 1000,
   ignoredRouteFiles: ["**/.*"],
@@ -21,4 +21,6 @@ export default {
     v2_normalizeFormMethod: true,
     v2_routeConvention: true,
   },
-};
+  tailwind: true,
+  postcss: true,
+}

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "remix build",
-    "dev": "remix dev --no-restart -c \"npm run start\"",
+    "dev": "remix dev --no-restart -c \"bun run start\"",
     "start": "wrangler pages dev --compatibility-date=2023-06-21 ./public",
     "typecheck": "tsc"
   },
@@ -25,6 +25,9 @@
     "@remix-run/eslint-config": "^1.18.1",
     "@types/react": "^18.0.35",
     "@types/react-dom": "^18.0.11",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.25",
+    "tailwindcss": "^3.3.2",
     "wrangler": "^3.1.1"
   },
   "engines": {
