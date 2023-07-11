@@ -1,9 +1,9 @@
-import { test } from "vitest"
 import { mkdir, readdir, readFile, writeFile } from "fs/promises"
 import { join } from "path"
+import { test } from "vitest"
 import { exists } from "../../lib/node"
-import { openAiEmbed } from "../OpenAI"
 import { removeExtension } from "../gather/common"
+import { mkOpenAI, openAiEmbed } from "../OpenAI"
 
 interface Chunk {
   excerpt: string
@@ -18,6 +18,8 @@ interface EmbeddedChunk extends Chunk {
 const CHUNKS_DIR = "data/books/chunks/"
 const EMBEDS_DIR = "data/books/embeddings/"
 
+const api = mkOpenAI()
+
 test(
   "embed books",
   async () => {
@@ -29,14 +31,17 @@ test(
 
       const s = await readFile(join(CHUNKS_DIR, file), "utf-8")
       const chunks: ReadonlyArray<Chunk> = JSON.parse(s)
-      const { data } = await openAiEmbed(chunks.map(x => x.excerpt))
+      const { data } = await openAiEmbed(
+        api,
+        chunks.map(x => x.excerpt),
+      )
       const arr = data.map(
         ({ embedding }, i) =>
           ({
             ...chunks[i],
             embedding,
             book: file,
-          }) satisfies EmbeddedChunk,
+          } satisfies EmbeddedChunk),
       )
       await writeFile(outPath, JSON.stringify(arr))
     }

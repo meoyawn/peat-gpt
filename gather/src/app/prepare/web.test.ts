@@ -2,10 +2,10 @@ import { randomUUID } from "crypto"
 import { mkdir, readdir, readFile, writeFile } from "fs/promises"
 import { join } from "path"
 import { test } from "vitest"
-import { ResponseError } from "../../../gen/openai"
+import { ResponseError } from "../../../../gen/openai"
 import { exists } from "../../lib/node"
 import { batchArray } from "../../lib/ts"
-import { openAiEmbed } from "../OpenAI"
+import { mkOpenAI, openAiEmbed } from "../OpenAI"
 
 const CHUNKS_DIR = "data/web/chunks/"
 const EMBEDDINGS_DIR = "data/web/embeddings/"
@@ -51,12 +51,14 @@ const getURL = (file: string) => {
   }
 }
 
+const api = mkOpenAI()
+
 const batched = async (
   input: ReadonlyArray<string>,
   url: string,
 ): Promise<ReadonlyArray<WebEmbedding>> => {
   try {
-    const { data } = await openAiEmbed(input)
+    const { data } = await openAiEmbed(api, input)
     return data.map(({ embedding }, i) => {
       if (!embedding) throw new Error(JSON.stringify(data))
 

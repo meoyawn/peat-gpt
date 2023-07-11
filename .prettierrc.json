@@ -1,6 +1,12 @@
 {
   "arrowParens": "avoid",
+  "pluginSearchDirs": [],
+  "plugins": [
+    "prettier-plugin-packagejson",
+    "@ianvs/prettier-plugin-sort-imports",
+    "prettier-plugin-tailwindcss"
+  ],
   "semi": false,
-  "trailingComma": "all",
-  "singleQuote": false
+  "singleQuote": false,
+  "trailingComma": "all"
 }

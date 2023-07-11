@@ -4,34 +4,36 @@ import {
   type ChatCompletionRequestMessage,
   type ChatCompletionResponseMessage,
   type CreateEmbeddingResponse,
-} from "../../gen/openai"
+} from "../../../gen/openai"
 
-const openAiApi = new OpenAIApi(
-  new Configuration({
-    headers: {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      Authorization: `Bearer ${process.env.VITE_OPENAPI_KEY}`,
-    },
-  }),
-)
+export const mkOpenAI = (
+  key: string = process.env.VITE_OPENAPI_KEY!,
+): OpenAIApi =>
+  new OpenAIApi(
+    new Configuration({
+      headers: {
+        Authorization: `Bearer ${key}`,
+      },
+    }),
+  )
 
 export const openAiEmbed = (
+  api: OpenAIApi,
   input: ReadonlyArray<string> | string,
 ): Promise<CreateEmbeddingResponse> =>
-  openAiApi.createEmbedding({
+  api.createEmbedding({
     model: "text-embedding-ada-002",
     input: input as Array<string> | string,
   })
 
 export const openAiChat = async (
-  messages: ReadonlyArray<
-    ChatCompletionRequestMessage | ChatCompletionResponseMessage
-  >,
+  api: OpenAIApi,
+  messages: ReadonlyArray<ChatCompletionRequestMessage>,
 ): Promise<ChatCompletionResponseMessage> => {
-  const { choices } = await openAiApi.createChatCompletion({
+  const { choices } = await api.createChatCompletion({
     model: "gpt-3.5-turbo-16k",
     messages: messages as Array<ChatCompletionRequestMessage>,
-    temperature: 0.05,
+    temperature: 0.001,
   })
   const [{ message }] = choices
   if (!message) throw new Error(JSON.stringify({ messages, choices }))

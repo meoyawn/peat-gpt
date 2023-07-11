@@ -5,7 +5,7 @@ import { test } from "vitest"
 import { exists } from "../../lib/node"
 import { joinEvery, parseTTML } from "../../lib/ttml"
 import { removeExtension } from "../gather/common"
-import { openAiEmbed } from "../OpenAI"
+import { mkOpenAI, openAiEmbed } from "../OpenAI"
 
 const CHUNK_LEN_MILLIS = 180_000
 
@@ -49,6 +49,8 @@ interface EmbeddedChunk extends PreparedChunk {
   url: string
 }
 
+const api = mkOpenAI()
+
 test(
   "embed youtube",
   async () => {
@@ -64,7 +66,10 @@ test(
       const text = await readFile(join(inp, file), "utf-8")
       const chunks: ReadonlyArray<PreparedChunk> = JSON.parse(text)
 
-      const { data } = await openAiEmbed(chunks.map(x => x.excerpt))
+      const { data } = await openAiEmbed(
+        api,
+        chunks.map(x => x.excerpt),
+      )
 
       const arr = data.map(
         ({ embedding }, i) =>

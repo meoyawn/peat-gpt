@@ -1,5 +1,5 @@
 {
-  "name": "PeatGPT-front",
+  "name": "peat-gpt-front",
   "version": "0.0.1",
   "private": true,
   "sideEffects": false,
@@ -17,20 +17,27 @@
     "@remix-run/react": "^1.18.1",
     "isbot": "^3.6.8",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.45.1",
+    "rehype-external-links": "^2.1.0",
+    "rehype-stringify": "^9.0.3",
+    "remark-gfm": "^3.0.1",
+    "remark-parse": "^10.0.2",
+    "remark-rehype": "^10.1.0",
+    "unified": "^10.1.2"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.19.0",
     "@remix-run/dev": "^1.18.1",
     "@remix-run/eslint-config": "^1.18.1",
+    "@tailwindcss/forms": "^0.5.3",
+    "@tailwindcss/typography": "^0.5.9",
+    "@types/marked": "^5.0.0",
     "@types/react": "^18.0.35",
     "@types/react-dom": "^18.0.11",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.25",
     "tailwindcss": "^3.3.2",
     "wrangler": "^3.1.1"
-  },
-  "engines": {
-    "node": ">=16.13.0"
   }
 }

@@ -2,21 +2,9 @@ import { randomUUID } from "crypto"
 import { readdir, readFile, writeFile } from "fs/promises"
 import { join } from "path"
 import { test } from "vitest"
-import { ChatCompletionRequestMessage } from "../../../gen/openai"
-import {
-  Configuration,
-  UpsertVector,
-  VectorOperationsApi,
-} from "../../../gen/pinecone"
+import { ResponseError, UpsertVector } from "../../../../gen/pinecone"
 import { batchArray } from "../../lib/ts"
-import { openAiChat, openAiEmbed } from "../OpenAI"
-
-const pineconeAPI = new VectorOperationsApi(
-  new Configuration({
-    basePath: process.env.VITE_PINECONE_BASE,
-    apiKey: process.env.VITE_PINECONE_KEY,
-  }),
-)
+import { mkPinecone } from "../pinecone"
 
 interface Embedded {
   id: string
@@ -28,59 +16,6 @@ interface Embedded {
 }
 
 const DATA_DIR = "data/"
-
-const INIT_PROMPT = `
-Your role is to emulate Dr. Ray Peat by answering user queries based on his writings.
-With every user question, a corresponding excerpt from Dr. Peat's works will be shared.
-Use ONLY the relevant information from the given context to form your response.
-If a previous conversation or its relevant context can aid in answering the question, incorporate it.
-
-DO NOT use your own knowledge to answer the question.
-Your responses MUST be strictly grounded in the provided context and/or previous conversation.
-If the query cannot be answered from context, ask user for clarification or to rephrase the question.
-
-You MUST mention sources for anything you state:
-- for books mention title and page number
-- for web pages mention URL
-- for YouTube mention URL, add "?t=Ns" (take "begin" from context, convert HH:MM:SS.XXX to seconds) query param (e.g., https://www.youtube.com/watch?v=nW3uRVJ24eU&t=378s).
-`
-
-const INIT: Readonly<ChatCompletionRequestMessage> = {
-  role: "system",
-  content: INIT_PROMPT,
-}
-
-test(
-  "query",
-  async () => {
-    const query = "how to increase testosterone for men?"
-
-    const question: ChatCompletionRequestMessage = {
-      role: "user",
-      content: query,
-    }
-    console.log(question)
-
-    const { data } = await openAiEmbed(query)
-    const { matches } = await pineconeAPI.query({
-      vector: data[0].embedding,
-      topK: 15,
-      includeMetadata: true,
-    })
-    if (!matches?.length) throw new Error("no pinecone matches")
-    const ctx = matches.map(x => x.metadata)
-    console.log(JSON.stringify(matches, null, 2))
-    const context: ChatCompletionRequestMessage = {
-      role: "system",
-      content: `Relevant info from Ray Peat's work: ${JSON.stringify(ctx)}`,
-    }
-
-    console.log(await openAiChat([INIT, question, context]))
-  },
-  {
-    timeout: 1_000_000,
-  },
-)
 
 test(
   "clean embeddings",
@@ -108,6 +43,8 @@ test(
   },
   { timeout: 1_000_000 },
 )
+
+const pineconeAPI = mkPinecone()
 
 test.skip(
   "delete youtube",
@@ -140,7 +77,7 @@ const toPinecone = ({
 test(
   "upsert DIRS",
   async () => {
-    for (const dir of ["articles"]) {
+    for (const dir of ["web", "youtube"]) {
       const embeddingsDir = join(DATA_DIR, dir, "embeddings")
       for (const file of await readdir(embeddingsDir)) {
         const jsonPath = join(embeddingsDir, file)
@@ -151,13 +88,20 @@ test(
         const batches = batchArray(full, 250)
         console.log(file, batches.length)
 
-        await Promise.all(
-          batches.map(vectors => pineconeAPI.upsert({ vectors })),
-        )
+        try {
+          await Promise.all(
+            batches.map(vectors => pineconeAPI.upsert({ vectors })),
+          )
+        } catch (e) {
+          if (e instanceof ResponseError) {
+            console.error(e.response.status, await e.response.text())
+          }
+          throw e
+        }
       }
     }
   },
   {
-    timeout: 1_000_000,
+    timeout: 1_000_000_000,
   },
 )

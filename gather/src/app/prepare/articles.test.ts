@@ -4,7 +4,7 @@ import { join } from "path"
 import { expect, test } from "vitest"
 import { exists } from "../../lib/node"
 import { removeExtension } from "../gather/common"
-import { openAiEmbed } from "../OpenAI"
+import { mkOpenAI, openAiEmbed } from "../OpenAI"
 
 interface Chunk {
   excerpt: string
@@ -115,6 +115,8 @@ interface EmbeddedChunk extends Chunk {
   embedding: ReadonlyArray<number>
 }
 
+const api = mkOpenAI()
+
 test(
   "embed articles",
   async () => {
@@ -131,7 +133,10 @@ test(
       const chunks: ReadonlyArray<Chunk> = JSON.parse(text)
       console.log(inPath, chunks.length)
 
-      const { data } = await openAiEmbed(chunks.map(({ excerpt }) => excerpt))
+      const { data } = await openAiEmbed(
+        api,
+        chunks.map(({ excerpt }) => excerpt),
+      )
       const arr = data.map(
         ({ embedding }, i) =>
           ({

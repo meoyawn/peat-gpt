@@ -1,5 +1,5 @@
 /** @type {import("@remix-run/dev").AppConfig} */
-export default {
+const cfg = {
   devServerBroadcastDelay: 1000,
   ignoredRouteFiles: ["**/.*"],
   server: "./server.ts",
@@ -10,6 +10,7 @@ export default {
   serverMinify: true,
   serverModuleFormat: "esm",
   serverPlatform: "neutral",
+  watchPaths: ["../gen/", "../gather/src/"],
   // appDirectory: "app",
   // assetsBuildDirectory: "public/build",
   // publicPath: "/build/",
@@ -24,3 +25,5 @@ export default {
   tailwind: true,
   postcss: true,
 }
+
+export default cfg

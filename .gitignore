@@ -4,4 +4,4 @@ gen/
 yarn-error.log
 tsconfig.tsbuildinfo
 data/
-.env
+gather/.env

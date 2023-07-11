@@ -1,5 +1,4 @@
 import { expect, test } from "vitest"
-
 import { cliText } from "../../lib/node"
 
 test("cli", async () => {

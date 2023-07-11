@@ -1,10 +1,10 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from "tailwindcss"
 
+// noinspection JSUnusedGlobalSymbols
 export default {
-  content: [],
+  content: ["./app/**/*.{js,jsx,ts,tsx}"],
+  plugins: [require("@tailwindcss/typography"), require("@tailwindcss/forms")],
   theme: {
     extend: {},
   },
-  plugins: [],
 } satisfies Config
-
