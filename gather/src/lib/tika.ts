@@ -1,8 +1,7 @@
 import { cliText } from "./node"
 
-export const tikaText = async (url: string): Promise<string> => {
-  const text = await cliText("tika", "-T", url)
-  if (text.length >= 100) return text
-
-  return await cliText("tika", "-t", url)
+export const tikaText = async (url: URL): Promise<string> => {
+  const text = await cliText("tika", "-T", url.toString())
+  if (text.length <= 200) throw new Error(JSON.stringify({ url, text }))
+  return text
 }

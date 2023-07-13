@@ -1,5 +1,5 @@
-import { access } from "fs/promises"
 import { spawn } from "child_process"
+import { access } from "fs/promises"
 
 export const exists = (path: string): Promise<boolean> =>
   access(path)
@@ -25,7 +25,7 @@ export const cliText = async (...cmd: ReadonlyArray<string>): Promise<string> =>
       if (code === 0) {
         resolve(data.trim())
       } else {
-        reject(error || `'${cmd.join(" ")}' exit code ${String(code)}`)
+        reject({ cmd: cmd.join(" "), code, error })
       }
     })
   })

@@ -5,7 +5,7 @@ import type {
   TypedResponse,
 } from "@remix-run/cloudflare"
 import { json } from "@remix-run/cloudflare"
-import { AiMemory, type Message } from "PeatGTP-gather/src/app/bot"
+import { AiMemory, type Message } from "../../../gather/src/app/bot"
 import { mkOpenAI } from "../../../gather/src/app/OpenAI"
 import { mkPinecone } from "../../../gather/src/app/pinecone"
 

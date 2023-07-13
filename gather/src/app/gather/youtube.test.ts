@@ -28,25 +28,21 @@ const writeSubs = async (videoURL: string, dir: string) => {
   await writeFile(join(dir, `${v}.${lang}.${ext}`), ttml)
 }
 
-const downloadYT = async (dir: string): Promise<void> => {
-  const { lists, minDurationSeconds } = inputs.youtube
-
-  for (const url of lists) {
-    const pl = await ytDlpPlaylist(url)
-    for (const e of pl.entries) {
-      if (e.duration >= minDurationSeconds) {
-        await writeSubs(e.url, dir)
-      }
-    }
-  }
-}
-
 const dir = "data/youtube/"
 
-test.skip(
+test(
   "youtube",
   async () => {
-    await downloadYT("data/youtube/")
+    const { lists, minDurationSeconds } = inputs.youtube
+
+    for (const url of lists) {
+      const pl = await ytDlpPlaylist(url)
+      for (const e of pl.entries) {
+        if (e.duration >= minDurationSeconds) {
+          await writeSubs(e.url, dir)
+        }
+      }
+    }
   },
   { timeout: 1_000_000 },
 )

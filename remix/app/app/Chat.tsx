@@ -1,4 +1,4 @@
-import { type Message } from "PeatGTP-gather/src/app/bot"
+import { type Message } from "../../../gather/src/app/bot"
 import React, { useEffect, useRef, useState, type JSX } from "react"
 import { useForm } from "react-hook-form"
 import { md2Html } from "./markdown"

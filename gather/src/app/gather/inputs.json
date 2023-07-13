@@ -4,6 +4,30 @@
     "selector": ".posted a"
   },
   "books": [],
+  "chadnet": {
+    "selector": ".category a",
+    "writing": {
+      "url": "https://wiki.chadnet.org/ray-peat",
+      "exclude": [
+        "https://raypeat.com/",
+        "https://wiki.chadnet.org/files/ray-peat-masters-thesis.pdf",
+        "https://wiki.chadnet.org/ray-peat-interviews.html"
+      ]
+    },
+    "transcripts": {
+      "urls": [
+        "https://wiki.chadnet.org/ray-peat-interviews",
+        "https://wiki.chadnet.org/ray-peat-interviews-miscellaneous",
+        "https://wiki.chadnet.org/ray-peat-interviews-one-radio-network"
+      ]
+    }
+  },
+  "emailDepository": {
+    "home": "https://raypeatforum.com/community/threads/ray-peat-email-advice-depository.1035/page-1",
+    "nextSelector": ".pageNav-jump--next",
+    "postSelector": ".message-body .bbWrapper",
+    "trashText": "\nClick to expand..."
+  },
   "web": [
     "https://raypeatforum.com/wiki/index.php/Ray_Peat_Email_Exchanges",
     "https://archive.org/details/mega-master-ray-newsletter"
@@ -13,7 +37,8 @@
     "lists": [
       "https://www.youtube.com/@RayPeatClips",
       "https://www.youtube.com/@raypeat3365",
-      "https://www.youtube.com/playlist?list=TLGGj9cpCCAUB1YyNjA2MjAyMw"
+      "https://www.youtube.com/playlist?list=TLGGj9cpCCAUB1YyNjA2MjAyMw",
+      "https://www.youtube.com/@raypeatpodcaststranscribed781"
     ]
   }
 }

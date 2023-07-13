@@ -1,9 +1,7 @@
-export const removeExtension = (filename: string): string =>
-  filename.replace(/\.[^.]+$/, "")
+import { basename, extname } from "path"
 
-export const filenameWithoutExtension = (u: URL): string => {
-  const filename = u.pathname.split("/").pop()
-  if (!filename) throw new Error(String(u))
+export const removeExtension = (path: string): string =>
+  basename(path, extname(path))
 
-  return decodeURIComponent(removeExtension(filename))
-}
+export const filenameWithoutExtension = (u: URL): string =>
+  decodeURIComponent(removeExtension(u.pathname))

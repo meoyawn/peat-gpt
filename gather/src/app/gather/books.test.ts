@@ -10,13 +10,11 @@ test(
   "download",
   async () => {
     for (const url of inputs.books) {
-      const file = join(
-        "data/books/",
-        `${filenameWithoutExtension(new URL(url))}.txt`,
-      )
+      const urr = new URL(url)
+      const file = join("data/books/", `${filenameWithoutExtension(urr)}.txt`)
       if (await exists(file)) continue
 
-      await writeFile(file, await tikaText(url))
+      await writeFile(file, await tikaText(urr))
     }
   },
   { timeout: 1_000_000 },
