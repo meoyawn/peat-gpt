@@ -1,5 +1,5 @@
 import { mkdir, readdir, readFile, writeFile } from "fs/promises"
-import { basename, extname, join } from "path"
+import { basename, extname, join } from "src/lib/path"
 import { fromHtml } from "hast-util-from-html"
 import { selectAll } from "hast-util-select"
 import { toText } from "hast-util-to-text"
@@ -9,10 +9,10 @@ import { getHref } from "../../lib/html"
 import { cliText, exists } from "../../lib/node"
 import { splitSentences } from "../../lib/text"
 import { mkOpenAI } from "../OpenAI"
-import { filenameWithoutExtension } from "./common"
+import { filenameWithoutExtension } from "../../lib/path"
 import inputs from "./inputs.json"
 
-async function* mp3URLs(): AsyncGenerator<readonly [URL, string], void> {
+async function* fetchMP3s(): AsyncGenerator<readonly [URL, string], void> {
   const { transcripts, selector } = inputs.chadnet
   for (const pageURL of transcripts.urls) {
     const origin = new URL(pageURL)
@@ -69,7 +69,7 @@ test("chunk transcripts", async () => {
 
   await mkdir(TRANSCRIPT_CHUNKS_DIR, { recursive: true })
 
-  for await (const [url, title] of mp3URLs()) {
+  for await (const [url, title] of fetchMP3s()) {
     const outPath = join(
       TRANSCRIPT_CHUNKS_DIR,
       `${filenameWithoutExtension(url)}.json`,
@@ -91,7 +91,7 @@ test.skip(
     const downloadsData = await readdir(DOWNLOADS_DATA_DIR)
 
     const missing = Array<string>(0)
-    for await (const [url] of mp3URLs()) {
+    for await (const [url] of fetchMP3s()) {
       const name = filenameWithoutExtension(url)
       if (!downloadsData.some(x => x.includes(name))) {
         missing.push(url.toString())
@@ -187,7 +187,7 @@ test(
 
         try {
           const { text } = await openAIApi.createTranscription(
-            new Blob([await readFile(filePath)], { type: "mp3" }),
+            new Blob([await readFile(filePath)]),
             "whisper-1",
             basename(filePath),
           )

@@ -1,12 +1,12 @@
 import { readFile, writeFile } from "fs/promises"
-import { join } from "path"
+import { join } from "src/lib/path"
 import { fromHtml } from "hast-util-from-html"
 import { selectAll } from "hast-util-select"
 import { expect, test } from "vitest"
 import { getHref } from "../../lib/html"
 import { exists } from "../../lib/node"
 import { tikaText } from "../../lib/tika"
-import { filenameWithoutExtension } from "./common"
+import { filenameWithoutExtension } from "../../lib/path"
 import inputs from "./inputs.json"
 
 const downloadArticles = async (dir: string): Promise<void> => {

@@ -1,9 +1,9 @@
 import { writeFile } from "fs/promises"
-import { join } from "path"
+import { join } from "src/lib/path"
 import { test } from "vitest"
 import { exists } from "../../lib/node"
 import { tikaText } from "../../lib/tika"
-import { filenameWithoutExtension } from "./common"
+import { filenameWithoutExtension } from "../../lib/path"
 import inputs from "./inputs.json"
 
 test(

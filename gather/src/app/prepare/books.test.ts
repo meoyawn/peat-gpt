@@ -2,7 +2,7 @@ import { mkdir, readdir, readFile, writeFile } from "fs/promises"
 import { join } from "path"
 import { test } from "vitest"
 import { exists } from "../../lib/node"
-import { removeExtension } from "../gather/common"
+import { removeExtension } from "../../lib/path"
 import { mkOpenAI, openAiEmbed } from "../OpenAI"
 
 interface Chunk {

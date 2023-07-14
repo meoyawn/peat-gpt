@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from "fs/promises"
-import { join } from "path"
+import { join } from "src/lib/path"
 import { fromHtml } from "hast-util-from-html"
 import { selectAll } from "hast-util-select"
 import { expect, test } from "vitest"
@@ -7,7 +7,7 @@ import { getHref } from "../../lib/html"
 import { exists } from "../../lib/node"
 import { splitParagraphs, splitSentences } from "../../lib/text"
 import { tikaText } from "../../lib/tika"
-import { filenameWithoutExtension } from "./common"
+import { filenameWithoutExtension } from "../../lib/path"
 import inputs from "./inputs.json"
 
 interface Chunk {

@@ -1,9 +1,10 @@
 import { mkdir, writeFile } from "fs/promises"
-import { join } from "path"
+import { join } from "src/lib/path"
 import { fromHtml } from "hast-util-from-html"
 import { select, selectAll } from "hast-util-select"
 import { toText } from "hast-util-to-text"
 import { expect, test } from "vitest"
+import { getHref } from "../../lib/html"
 import { exists } from "../../lib/node"
 import inputs from "./inputs.json"
 
@@ -27,10 +28,10 @@ test("path last two", () => {
   ).toBe("ray-peat-email-advice-depository.1035")
 })
 
-async function* pageURLs(): AsyncGenerator<string, void> {
+async function* pageURLs(): AsyncGenerator<URL, void> {
   const { home, nextSelector } = inputs.emailDepository
 
-  let url = home
+  let url = new URL(home)
 
   while (true) {
     yield url
@@ -38,17 +39,15 @@ async function* pageURLs(): AsyncGenerator<string, void> {
     const r = await fetch(url)
     const html = await r.text()
     const next = select(nextSelector, fromHtml(html))
-    if (typeof next?.properties?.href !== "string") break
+    if (!next) break
 
-    const newURL = new URL(url)
-    newURL.pathname = next.properties.href
-    url = String(newURL)
+    url = getHref(url, next)
   }
 }
 
 interface Chunk {
   excerpt: string
-  url: string
+  url: URL
 }
 
 const OUT_DIR = "data/email-depository/chunks/"
@@ -60,7 +59,7 @@ test(
     await mkdir(OUT_DIR, { recursive: true })
 
     for await (const url of pageURLs()) {
-      const outPath = join(OUT_DIR, `${pathLastTwo(new URL(url))}.json`)
+      const outPath = join(OUT_DIR, `${pathLastTwo(url)}.json`)
       if (await exists(outPath)) continue
 
       const r = await fetch(url, { redirect: "follow" })

@@ -28,19 +28,19 @@ interface FlatPlaylist extends YtDL {
   entries: ReadonlyArray<Entry>
 }
 
-export async function ytDlpInfo(url: string): Promise<Info> {
-  const s = await cliText(
-    "yt-dlp",
-    url,
-    "-J",
-    "--flat-playlist",
-    "--playlist-end",
-    "1",
-  )
-  return JSON.parse(s) as Info
-}
+export const ytDlpInfo = async (url: string): Promise<Info> =>
+  JSON.parse(
+    await cliText(
+      "yt-dlp",
+      url,
+      "-J",
+      "--flat-playlist",
+      "--playlist-end",
+      "1",
+    ),
+  ) as Info
 
-export async function ytDlpPlaylist(url: string): Promise<FlatPlaylist> {
-  const s = await cliText("yt-dlp", url, "-J", "--flat-playlist")
-  return JSON.parse(s) as FlatPlaylist
-}
+export const ytDlpPlaylist = async (url: string): Promise<FlatPlaylist> =>
+  JSON.parse(
+    await cliText("yt-dlp", url, "-J", "--flat-playlist"),
+  ) as FlatPlaylist

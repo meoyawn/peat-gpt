@@ -54,7 +54,7 @@ export const splitParagraphs = (text: string): ReadonlyArray<Paragraph> => {
   let acc: Paragraph = { text: lines[0] }
   let page: number | undefined
 
-  /** note it starts from 1 */
+  /** NOTE it starts from 1 */
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim()
 

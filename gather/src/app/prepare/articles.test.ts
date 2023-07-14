@@ -4,7 +4,7 @@ import { join } from "path"
 import { expect, test } from "vitest"
 import { exists } from "../../lib/node"
 import { splitSentences } from "../../lib/text"
-import { removeExtension } from "../gather/common"
+import { removeExtension } from "../../lib/path"
 import { mkOpenAI, openAiEmbed } from "../OpenAI"
 
 interface Chunk {

@@ -4,7 +4,7 @@ import { join } from "path"
 import { test } from "vitest"
 import { exists } from "../../lib/node"
 import { joinEvery, parseTTML } from "../../lib/ttml"
-import { removeExtension } from "../gather/common"
+import { removeExtension } from "../../lib/path"
 import { mkOpenAI, openAiEmbed } from "../OpenAI"
 
 const CHUNK_LEN_MILLIS = 180_000

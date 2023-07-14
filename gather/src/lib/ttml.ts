@@ -43,7 +43,7 @@ const ttmlToMillis = (timestamp: TtmlTS): number => {
 
 export const joinEvery = (
   cues: ReadonlyArray<Readonly<TtmlCue>>,
-  millis: number,
+  durationMillis: number,
   separator = " ",
 ): ReadonlyArray<Readonly<TtmlCue>> => {
   const ret = Array<TtmlCue>()
@@ -53,7 +53,7 @@ export const joinEvery = (
 
   for (let i = 1; i < cues.length; i++) {
     const cue = cues[i]
-    if (ttmlToMillis(cue.end) - ttmlToMillis(accum.begin) <= millis) {
+    if (ttmlToMillis(cue.end) - ttmlToMillis(accum.begin) <= durationMillis) {
       accum.text += separator + cue.text
       accum.end = cue.end
     } else {

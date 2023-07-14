@@ -9,7 +9,7 @@ export const exists = (path: string): Promise<boolean> =>
 export const cliText = async (...cmd: ReadonlyArray<string>): Promise<string> =>
   new Promise((resolve, reject) => {
     // eslint-disable-next-line no-console
-    console.log(cmd.join(" "))
+    console.log(...cmd)
 
     const [command, ...args] = cmd
     const child = spawn(command, args)
@@ -25,7 +25,11 @@ export const cliText = async (...cmd: ReadonlyArray<string>): Promise<string> =>
       if (code === 0) {
         resolve(data.trim())
       } else {
-        reject({ cmd: cmd.join(" "), code, error })
+        reject(
+          new Error(
+            JSON.stringify({ cmd: cmd.join(" "), code, error }, null, 2),
+          ),
+        )
       }
     })
   })
