@@ -20,12 +20,12 @@ const writeSubs = async (videoURL: string, dir: string) => {
 
   if (await exists(join(dir, `${v}.json`))) return
 
-  const i = await ytDlpInfo(videoURL)
-  await writeFile(join(dir, `${v}.json`), JSON.stringify(i, null, 2))
+  const info = await ytDlpInfo(videoURL)
+  await writeFile(join(dir, `${v}.json`), JSON.stringify(info, null, 2))
 
   const ext = "ttml"
   const lang = "en"
-  const subURL = subtitleURL(i, lang, ext)
+  const subURL = subtitleURL(info, lang, ext)
   if (!subURL) return
 
   const res = await fetch(subURL)
@@ -94,7 +94,7 @@ test(
   { timeout: 1_000_000 },
 )
 
-test("cleanup", async () => {
+test.skip("cleanup", async () => {
   const names = await readdir(YOUTUBE_DIR)
   for (const name of names) {
     if (!name.endsWith(".json")) continue

@@ -3,11 +3,12 @@ import { mkdir, readdir, readFile, writeFile } from "fs/promises"
 import { join } from "path"
 import { test } from "vitest"
 import { exists } from "../../lib/node"
-import { joinEvery, parseTTML } from "../../lib/ttml"
 import { removeExtension } from "../../lib/path"
+import { joinEvery, parseTTML } from "../../lib/ttml"
 import { mkOpenAI, openAiEmbed } from "../OpenAI"
 
-const CHUNK_LEN_MILLIS = 180_000
+const CHUNK_MILLIS = /** 4 minutes */ 240_000
+const OVERLAP_MILLIS = /** 30 seconds */ 30_000
 
 interface PreparedChunk {
   excerpt: string
@@ -20,7 +21,8 @@ const chunkSubs = async (
 ): Promise<ReadonlyArray<PreparedChunk>> =>
   joinEvery(
     parseTTML(await readFile(ttmlPath, "utf-8")).tt.body.div.p,
-    CHUNK_LEN_MILLIS,
+    CHUNK_MILLIS,
+    OVERLAP_MILLIS,
   ).map(x => ({
     excerpt: x.text,
     begin: x.begin,
