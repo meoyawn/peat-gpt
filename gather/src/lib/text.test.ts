@@ -5,16 +5,17 @@ describe("splitSentences", () => {
   test("quoted sentence", () => {
     expect(
       splitSentences(`He saw her. "She's hot." That was his first thought.`, 5),
-    ).toEqual(["hello.", "world"])
+    ).toEqual(["He saw her.", `"She's hot." That was his first thought.`])
   })
 
   test("split on sentence max len", () => {
-    expect(splitSentences("hello. world", 10)).toEqual(["hello.", "world"])
-    expect(splitSentences("hello. world", 20)).toEqual(["hello. world"])
-    expect(() => splitSentences("hello. world", 0)).toThrow()
-    expect(splitSentences("hello. world", 1)).toEqual(["hello.", "world"])
-    expect(splitSentences("hello? world", 1)).toEqual(["hello?", "world"])
-    expect(splitSentences("hello!", 1)).toEqual(["hello!"])
+    expect(splitSentences("Hello. World", 5)).toEqual(["Hello.", "World"])
+    expect(splitSentences("Hello. World", 10)).toEqual(["Hello.", "World"])
+    expect(splitSentences("Hello. World", 20)).toEqual(["Hello. World"])
+    expect(() => splitSentences("Hello. World", 0)).toThrow()
+    expect(splitSentences("Hello. World", 1)).toEqual(["Hello.", "World"])
+    expect(splitSentences("Hello? World", 1)).toEqual(["Hello?", "World"])
+    expect(splitSentences("Hello!", 1)).toEqual(["Hello!"])
 
     // test with longer and complex text
     expect(
@@ -27,7 +28,7 @@ describe("splitSentences", () => {
     ).toEqual(["This is a test I love programming Do you"])
 
     // test with all sentence terminators and no words
-    expect(splitSentences("...!?!", 3)).toEqual(["...", "!?!"])
+    expect(splitSentences("...!?!", 3)).toEqual(["...!?!"])
 
     // test with empty string
     expect(splitSentences("", 1)).toEqual([""])
@@ -42,6 +43,33 @@ describe("splitSentences", () => {
         10,
       ),
     ).toEqual(["This is a really long sentence that exceeds the max length."])
+  })
+
+  test("simple overlap", () => {
+    expect(splitSentences("One. Two. Three.", 1, 1)).toEqual([
+      "One.",
+      "One. Two.",
+      "Two. Three.",
+    ])
+  })
+
+  test("with overlap", () => {
+    expect(splitSentences("Hello. World", 5, 1)).toEqual([
+      "Hello.",
+      "Hello. World",
+    ])
+    expect(splitSentences("Hello. World", 10, 1)).toEqual(["Hello.", "World"])
+    expect(splitSentences("Hello. World", 20, 1)).toEqual(["Hello. World"])
+    expect(() => splitSentences("Hello. World", 0, 1)).toThrow()
+    expect(splitSentences("Hello. World", 1, 1)).toEqual([
+      "Hello.",
+      "Hello. World",
+    ])
+    expect(splitSentences("Hello? World", 1, 1)).toEqual([
+      "Hello?",
+      "Hello? World",
+    ])
+    expect(splitSentences("Hello!", 1, 1)).toEqual(["Hello!"])
   })
 })
 

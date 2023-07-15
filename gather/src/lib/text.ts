@@ -1,7 +1,7 @@
 export const splitWords = (
   text: string,
   chunkLen: number,
-  overlapLen: number,
+  overlapLen: number = 0,
 ): ReadonlyArray<string> => {
   if (text.length === 0) return []
   if (isNaN(chunkLen) || chunkLen < 1) throw new Error(`chunkLen ${chunkLen}`)
@@ -17,8 +17,7 @@ export const splitWords = (
   let acc = ""
   let overlap = ""
 
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i]
+  for (const word of words) {
     const trimmed = acc.trim()
     const futureLen = trimmed.length + word.length
 
@@ -43,29 +42,41 @@ export const splitWords = (
 
 export const splitSentences = (
   text: string,
-  maxLen: number,
+  chunkLen: number,
+  overlapLen: number = 0,
 ): ReadonlyArray<string> => {
-  if (maxLen < 1) throw new Error("Max length must be at least 1")
+  if (chunkLen < 1) throw new Error("Max length must be at least 1")
 
   {
     const trimmed = text.trim()
-    if (trimmed.length <= maxLen) return [trimmed]
+    if (trimmed.length <= chunkLen) return [trimmed]
   }
 
   const out = Array<string>(0)
-  let acc = ""
+  const sentences = text.split(/(?<=[.!?])/)
+  if (!sentences.length) return out
 
-  for (const sentence of text.split(/(?<=[.!?])/)) {
-    const trimmed = acc.trim()
-    if (
-      trimmed.length > 0 &&
-      trimmed.length + sentence.length > maxLen &&
-      !trimmed.endsWith("...")
-    ) {
-      out.push(trimmed)
-      acc = ""
+  let acc = ""
+  let overlap = ""
+
+  for (const sentence of sentences) {
+    if (startsSentence(sentence)) {
+      const trimmed = acc.trim()
+      if (
+        trimmed.length > 0 &&
+        trimmed.length + sentence.length > chunkLen &&
+        !trimmed.endsWith("...")
+      ) {
+        out.push(trimmed)
+        acc = overlap
+        overlap = ""
+      }
     }
+
     acc += sentence
+    if (overlapLen > 0 && chunkLen - acc.length < overlapLen) {
+      overlap += sentence
+    }
   }
 
   if (acc.length) {
@@ -84,6 +95,14 @@ const isUpper = (char: string): boolean =>
 interface Paragraph {
   text: string
   page?: number
+}
+
+const startsSentence = (line: string): boolean => {
+  const trimmed = line.trim()
+  if (trimmed.length < 2) return false
+
+  const [one, two] = trimmed
+  return isUpper(one) || (!isLetter(one) && isUpper(two))
 }
 
 export const splitParagraphs = (text: string): ReadonlyArray<Paragraph> => {
@@ -107,16 +126,13 @@ export const splitParagraphs = (text: string): ReadonlyArray<Paragraph> => {
       continue
     }
 
-    if (line.length >= 2) {
-      const [one, two] = line
-      if (isUpper(one) || (!isLetter(one) && isUpper(two))) {
-        out.push(acc)
-        acc = { text: line }
-        if (page) {
-          acc.page = page + 1
-        }
-        continue
+    if (startsSentence(line)) {
+      out.push(acc)
+      acc = { text: line }
+      if (page) {
+        acc.page = page + 1
       }
+      continue
     }
 
     acc.text += " " + line
