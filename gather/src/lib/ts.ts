@@ -1,10 +1,10 @@
-export const batchArray = <T>(
+export const chunkArray = <T>(
   arr: ReadonlyArray<T>,
-  len: number,
+  chunkLen: number,
 ): ReadonlyArray<Array<T>> => {
   const ret: Array<Array<T>> = []
-  for (let i = 0; i < arr.length; i += len) {
-    ret.push(arr.slice(i, i + len))
+  for (let i = 0; i < arr.length; i += chunkLen) {
+    ret.push(arr.slice(i, i + chunkLen))
   }
   return ret
 }

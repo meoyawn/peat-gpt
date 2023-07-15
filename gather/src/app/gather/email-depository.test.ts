@@ -6,6 +6,9 @@ import { toText } from "hast-util-to-text"
 import { expect, test } from "vitest"
 import { getHref } from "../../lib/html"
 import { exists } from "../../lib/node"
+import { handleLongParagraph } from "../prepare/chunk"
+import chunking from "../prepare/chunking.json"
+import { embedChunks } from "../prepare/embed"
 import inputs from "./inputs.json"
 
 const pathLastTwo = (u: URL): string =>
@@ -50,30 +53,37 @@ interface Chunk {
   url: URL
 }
 
-const OUT_DIR = "data/email-depository/chunks/"
+const DEPOSITORY_DIR = "data/email-depository/"
 
 test(
   "chunk email depository",
   async () => {
     const { postSelector, trashText } = inputs.emailDepository
-    await mkdir(OUT_DIR, { recursive: true })
+    const { chunkLen, overlapLen } = chunking.longParagraphs
+
+    const chunksDir = join(DEPOSITORY_DIR, "chunks")
+    await mkdir(chunksDir, { recursive: true })
 
     for await (const url of pageURLs()) {
-      const outPath = join(OUT_DIR, `${pathLastTwo(url)}.json`)
+      const outPath = join(chunksDir, `${pathLastTwo(url)}.json`)
       if (await exists(outPath)) continue
 
+      console.log(url.toString())
       const r = await fetch(url, { redirect: "follow" })
       const html = await r.text()
-      const chunks = selectAll(postSelector, fromHtml(html)).map(
-        x =>
-          ({
-            excerpt: toText(x).trim().replaceAll(trashText, ""),
-            url,
-          } satisfies Chunk),
-      )
+
+      const chunks = selectAll(postSelector, fromHtml(html))
+        .map(x => toText(x).trim().replaceAll(trashText, ""))
+        .flatMap(handleLongParagraph)
+        .filter(x => x.length)
+        .map(excerpt => ({ excerpt, url } satisfies Chunk))
 
       await writeFile(outPath, JSON.stringify(chunks, null, 2))
     }
   },
   { timeout: 1_000_000 },
 )
+
+test("embed email depository", () => embedChunks(DEPOSITORY_DIR), {
+  timeout: 1_000_000,
+})

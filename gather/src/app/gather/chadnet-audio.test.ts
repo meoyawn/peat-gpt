@@ -8,9 +8,10 @@ import { ResponseError } from "../../../../gen/openai"
 import { getHref } from "../../lib/html"
 import { cliText, exists } from "../../lib/node"
 import { filenameWithoutExtension } from "../../lib/path"
-import { splitWords } from "../../lib/text"
+import { chunkSentences } from "../../lib/text"
 import { mkOpenAI } from "../OpenAI"
 import chunking from "../prepare/chunking.json"
+import { embedChunks } from "../prepare/embed"
 import inputs from "./inputs.json"
 
 async function* fetchMP3s(): AsyncGenerator<readonly [URL, string], void> {
@@ -59,35 +60,6 @@ interface TranscriptChunk {
   title: string
   excerpt: string
 }
-
-const TRANSCRIPT_CHUNKS_DIR = join(AUDIO_DIR, "chunks")
-
-test("chunk transcripts", async () => {
-  const downloadsFiles = await readdir(DOWNLOADS_DATA_DIR)
-  const localFiles = await readdir(TRANSCRIPTS_DIR)
-
-  await mkdir(TRANSCRIPT_CHUNKS_DIR, { recursive: true })
-
-  const { chunkLen, overlapLen } = chunking.mp3Transcripts
-
-  for await (const [url, title] of fetchMP3s()) {
-    const outPath = join(
-      TRANSCRIPT_CHUNKS_DIR,
-      `${filenameWithoutExtension(url)}.json`,
-    )
-    if (await exists(outPath)) continue
-
-    const inPath = find(url, downloadsFiles, localFiles)
-    console.log(inPath)
-
-    const text = await readFile(inPath, "utf8")
-    const chunks = splitWords(text, chunkLen, overlapLen)
-      .filter(x => x.length > chunking.minChunkLen)
-      .map(excerpt => ({ url, title, excerpt } satisfies TranscriptChunk))
-
-    await writeFile(outPath, JSON.stringify(chunks, null, 2))
-  }
-})
 
 test.skip(
   "download audios",
@@ -211,3 +183,33 @@ test(
     timeout: 1_000_000_000,
   },
 )
+
+test("chunk transcripts", async () => {
+  const downloadsFiles = await readdir(DOWNLOADS_DATA_DIR)
+  const localFiles = await readdir(TRANSCRIPTS_DIR)
+
+  const TRANSCRIPT_CHUNKS_DIR = join(AUDIO_DIR, "chunks")
+  await mkdir(TRANSCRIPT_CHUNKS_DIR, { recursive: true })
+
+  const { chunkLen, overlapLen } = chunking.longParagraphs
+
+  for await (const [url, title] of fetchMP3s()) {
+    const outPath = join(
+      TRANSCRIPT_CHUNKS_DIR,
+      `${filenameWithoutExtension(url)}.json`,
+    )
+    if (await exists(outPath)) continue
+
+    const inPath = find(url, downloadsFiles, localFiles)
+    console.log(inPath)
+
+    const text = await readFile(inPath, "utf8")
+    const chunks = chunkSentences(text, chunkLen, overlapLen)
+      .filter(x => x.length > chunking.minChunkLen)
+      .map(excerpt => ({ url, title, excerpt } satisfies TranscriptChunk))
+
+    await writeFile(outPath, JSON.stringify(chunks, null, 2))
+  }
+})
+
+test("embed transcripts", () => embedChunks(AUDIO_DIR), { timeout: 1_000_000 })

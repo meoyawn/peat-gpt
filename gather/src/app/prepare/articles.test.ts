@@ -3,7 +3,7 @@ import { mkdir, readdir, readFile, writeFile } from "fs/promises"
 import { join } from "path"
 import { expect, test } from "vitest"
 import { exists } from "../../lib/node"
-import { splitSentences } from "../../lib/text"
+import { chunkSentences } from "../../lib/text"
 import { removeExtension } from "../../lib/path"
 import { mkOpenAI, openAiEmbed } from "../OpenAI"
 
@@ -34,7 +34,7 @@ test("chunk articles", async () => {
 
     const obj = text
       .split("\n")
-      .flatMap(x => splitSentences(x, MAX_CHUNK_LEN))
+      .flatMap(x => chunkSentences(x, MAX_CHUNK_LEN))
       .filter(x => x.length)
       .map(x => {
         expect(x.length).toBeLessThanOrEqual(MAX_CHUNK_LEN)

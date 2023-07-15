@@ -3,7 +3,7 @@ import { readdir, readFile, writeFile } from "fs/promises"
 import { join } from "path"
 import { test } from "vitest"
 import { ResponseError, UpsertVector } from "../../../../gen/pinecone"
-import { batchArray } from "../../lib/ts"
+import { chunkArray } from "../../lib/ts"
 import { mkPinecone } from "../pinecone"
 
 interface Embedded {
@@ -17,7 +17,7 @@ interface Embedded {
 
 const DATA_DIR = "data/"
 
-test(
+test.skip(
   "clean embeddings",
   async () => {
     for (const dir of ["articles", "books", "web", "youtube"]) {
@@ -76,9 +76,16 @@ const toPinecone = ({
 })
 
 test(
-  "upsert DIRS",
+  "upsert dirs",
   async () => {
-    for (const dir of ["web", "youtube"]) {
+    for (const dir of [
+      "audio",
+      "books",
+      "chadnet",
+      "email-depository",
+      // "web",
+      "youtube",
+    ]) {
       const embeddingsDir = join(DATA_DIR, dir, "embeddings")
       for (const file of await readdir(embeddingsDir)) {
         const jsonPath = join(embeddingsDir, file)
@@ -86,7 +93,7 @@ test(
         const arr: ReadonlyArray<Embedded> = JSON.parse(s)
 
         const full = arr.filter(x => x.excerpt.length > 200).map(toPinecone)
-        const batches = batchArray(full, 250)
+        const batches = chunkArray(full, 250)
         console.log(file, batches.length)
 
         try {

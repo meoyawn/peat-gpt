@@ -1,44 +1,44 @@
 import { describe, expect, test } from "vitest"
-import { splitParagraphs, splitSentences, splitWords } from "./text"
+import { splitParagraphs, chunkSentences, chunkWords } from "./text"
 
 describe("splitSentences", () => {
   test("quoted sentence", () => {
     expect(
-      splitSentences(`He saw her. "She's hot." That was his first thought.`, 5),
+      chunkSentences(`He saw her. "She's hot." That was his first thought.`, 5),
     ).toEqual(["He saw her.", `"She's hot." That was his first thought.`])
   })
 
   test("split on sentence max len", () => {
-    expect(splitSentences("Hello. World", 5)).toEqual(["Hello.", "World"])
-    expect(splitSentences("Hello. World", 10)).toEqual(["Hello.", "World"])
-    expect(splitSentences("Hello. World", 20)).toEqual(["Hello. World"])
-    expect(() => splitSentences("Hello. World", 0)).toThrow()
-    expect(splitSentences("Hello. World", 1)).toEqual(["Hello.", "World"])
-    expect(splitSentences("Hello? World", 1)).toEqual(["Hello?", "World"])
-    expect(splitSentences("Hello!", 1)).toEqual(["Hello!"])
+    expect(chunkSentences("Hello. World", 5)).toEqual(["Hello.", "World"])
+    expect(chunkSentences("Hello. World", 10)).toEqual(["Hello.", "World"])
+    expect(chunkSentences("Hello. World", 20)).toEqual(["Hello. World"])
+    expect(() => chunkSentences("Hello. World", 0)).toThrow()
+    expect(chunkSentences("Hello. World", 1)).toEqual(["Hello.", "World"])
+    expect(chunkSentences("Hello? World", 1)).toEqual(["Hello?", "World"])
+    expect(chunkSentences("Hello!", 1)).toEqual(["Hello!"])
 
     // test with longer and complex text
     expect(
-      splitSentences("This is a test. I love programming. Do you?", 25),
+      chunkSentences("This is a test. I love programming. Do you?", 25),
     ).toEqual(["This is a test.", "I love programming.", "Do you?"])
 
     // test with no sentence terminators
     expect(
-      splitSentences("This is a test I love programming Do you", 25),
+      chunkSentences("This is a test I love programming Do you", 25),
     ).toEqual(["This is a test I love programming Do you"])
 
     // test with all sentence terminators and no words
-    expect(splitSentences("...!?!", 3)).toEqual(["...!?!"])
+    expect(chunkSentences("...!?!", 3)).toEqual(["...!?!"])
 
     // test with empty string
-    expect(splitSentences("", 1)).toEqual([""])
+    expect(chunkSentences("", 1)).toEqual([""])
 
     // test with maxLen larger than the string length
-    expect(splitSentences("Hello world!", 50)).toEqual(["Hello world!"])
+    expect(chunkSentences("Hello world!", 50)).toEqual(["Hello world!"])
 
     // test with sentence longer than maxLen
     expect(
-      splitSentences(
+      chunkSentences(
         "This is a really long sentence that exceeds the max length.",
         10,
       ),
@@ -46,7 +46,7 @@ describe("splitSentences", () => {
   })
 
   test("simple overlap", () => {
-    expect(splitSentences("One. Two. Three.", 1, 1)).toEqual([
+    expect(chunkSentences("One. Two. Three.", 1, 1)).toEqual([
       "One.",
       "One. Two.",
       "Two. Three.",
@@ -54,22 +54,22 @@ describe("splitSentences", () => {
   })
 
   test("with overlap", () => {
-    expect(splitSentences("Hello. World", 5, 1)).toEqual([
+    expect(chunkSentences("Hello. World", 5, 1)).toEqual([
       "Hello.",
       "Hello. World",
     ])
-    expect(splitSentences("Hello. World", 10, 1)).toEqual(["Hello.", "World"])
-    expect(splitSentences("Hello. World", 20, 1)).toEqual(["Hello. World"])
-    expect(() => splitSentences("Hello. World", 0, 1)).toThrow()
-    expect(splitSentences("Hello. World", 1, 1)).toEqual([
+    expect(chunkSentences("Hello. World", 10, 1)).toEqual(["Hello.", "World"])
+    expect(chunkSentences("Hello. World", 20, 1)).toEqual(["Hello. World"])
+    expect(() => chunkSentences("Hello. World", 0, 1)).toThrow()
+    expect(chunkSentences("Hello. World", 1, 1)).toEqual([
       "Hello.",
       "Hello. World",
     ])
-    expect(splitSentences("Hello? World", 1, 1)).toEqual([
+    expect(chunkSentences("Hello? World", 1, 1)).toEqual([
       "Hello?",
       "Hello? World",
     ])
-    expect(splitSentences("Hello!", 1, 1)).toEqual(["Hello!"])
+    expect(chunkSentences("Hello!", 1, 1)).toEqual(["Hello!"])
   })
 })
 
@@ -107,47 +107,3 @@ describe("splitParagraphs", () => {
   })
 })
 
-describe("splitWords", () => {
-  test("simple", () => {
-    expect(splitWords("hello world", 1, 0)).toEqual(["hello", "world"])
-    expect(splitWords("hello world", 20, 0)).toEqual(["hello world"])
-  })
-
-  test("overlapped", () => {
-    expect(() => splitWords("hello world", 0, 1)).toThrowError()
-    expect(splitWords("hello world", 1, 1)).toEqual(["hello", "hello world"])
-    expect(splitWords("hello world", 5, 5)).toEqual(["hello", "hello world"])
-    expect(splitWords("one two three", 1, 1)).toEqual([
-      "one",
-      "one two",
-      "two three",
-    ])
-  })
-
-  test("empty string", () => {
-    expect(splitWords("", 1, 0)).toEqual([])
-    expect(splitWords("", 5, 5)).toEqual([])
-  })
-
-  test("string with only whitespaces", () => {
-    expect(splitWords("     ", 1, 0)).toEqual([""])
-    expect(splitWords("     ", 2, 1)).toEqual([""])
-  })
-
-  test("string with a single word", () => {
-    expect(splitWords("word", 1, 0)).toEqual(["word"])
-    expect(splitWords("word", 5, 5)).toEqual(["word"])
-  })
-
-  test("chunkLen or overlapLen exceeds text length", () => {
-    expect(splitWords("short", 10, 0)).toEqual(["short"])
-    expect(() => splitWords("short", 0, 10)).toThrowError()
-    expect(splitWords("short", 10, 10)).toEqual(["short"])
-  })
-
-  test("negative chunkLen or overlapLen", () => {
-    expect(() => splitWords("hello world", -1, 0)).toThrowError()
-    expect(() => splitWords("hello world", 0, -1)).toThrowError()
-    expect(() => splitWords("hello world", -1, -1)).toThrowError()
-  })
-})

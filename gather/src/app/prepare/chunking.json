@@ -4,7 +4,8 @@
     "chunkLenMillis": 240000,
     "overlapMillis": 60000
   },
-  "mp3Transcripts": {
+  "longParagraphs": {
+    "maxLen": 10000,
     "chunkLen": 2800,
     "overlapLen": 700
   }

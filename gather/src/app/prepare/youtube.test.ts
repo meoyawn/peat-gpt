@@ -1,91 +1,60 @@
-import { randomUUID } from "crypto"
 import { mkdir, readdir, readFile, writeFile } from "fs/promises"
 import { join } from "path"
 import { test } from "vitest"
 import { exists } from "../../lib/node"
-import { removeExtension } from "../../lib/path"
 import { joinEvery, parseTTML } from "../../lib/ttml"
-import { mkOpenAI, openAiEmbed } from "../OpenAI"
+import { Info } from "../../lib/yt-dlp"
 import chunking from "./chunking.json"
+import { embedChunks } from "./embed"
 
-interface PreparedChunk {
-  excerpt: string
+interface Chunk {
+  title: string
   begin: string
   end: string
+  excerpt: string
+  url: string
 }
 
 const chunkSubs = async (
   ttmlPath: string,
-): Promise<ReadonlyArray<PreparedChunk>> => {
-  const text = await readFile(ttmlPath, "utf-8")
+  title: string,
+  url: string,
+): Promise<ReadonlyArray<Chunk>> => {
   const { overlapMillis, chunkLenMillis } = chunking.youtube
+  const text = await readFile(ttmlPath, "utf-8")
   return joinEvery(parseTTML(text).tt.body.div.p, chunkLenMillis, overlapMillis)
     .filter(x => x.text.length > chunking.minChunkLen)
     .map(x => ({
       excerpt: x.text,
       begin: x.begin,
       end: x.end,
+      title,
+      url,
     }))
 }
 
 const YOUTUBE_DIR = "data/youtube/"
 
 test("chunk youtube", async () => {
-  const out = join(YOUTUBE_DIR, "chunks")
-  await mkdir(out, { recursive: true })
+  const chunksDir = join(YOUTUBE_DIR, "chunks")
+  await mkdir(chunksDir, { recursive: true })
 
   const list = await readdir(YOUTUBE_DIR)
   for (const ttmlFile of list.filter(x => x.endsWith(".ttml"))) {
-    const chunks = await chunkSubs(join(YOUTUBE_DIR, ttmlFile))
-    await writeFile(
-      join(out, `${removeExtension(ttmlFile)}.json`),
-      JSON.stringify(chunks, null, 2),
+    const [vid] = ttmlFile.split(".")
+    const outPath = join(chunksDir, `${vid}.json`)
+    if (await exists(outPath)) return
+
+    const infoJSON = await readFile(join(YOUTUBE_DIR, `${vid}.json`), "utf-8")
+    const { title, webpage_url } = JSON.parse(infoJSON) as Info
+
+    const chunks = await chunkSubs(
+      join(YOUTUBE_DIR, ttmlFile),
+      title,
+      webpage_url,
     )
+    await writeFile(outPath, JSON.stringify(chunks, null, 2))
   }
 })
 
-interface EmbeddedChunk extends PreparedChunk {
-  id: string
-  embedding: ReadonlyArray<number>
-  url: string
-}
-
-const api = mkOpenAI()
-
-test(
-  "embed youtube",
-  async () => {
-    const inp = "data/youtube/chunks/"
-    const outDir = "data/youtube/embeddings/"
-    await mkdir(outDir, { recursive: true })
-
-    for (const file of await readdir(inp)) {
-      const outPath = join(outDir, file)
-      if (await exists(outPath)) continue
-
-      const [vid] = file.split(".")
-      const text = await readFile(join(inp, file), "utf-8")
-      const chunks: ReadonlyArray<PreparedChunk> = JSON.parse(text)
-
-      console.log(vid, chunks.length)
-      const { data } = await openAiEmbed(
-        api,
-        chunks.map(x => x.excerpt),
-      )
-
-      const arr = data.map(
-        ({ embedding }, i) =>
-          ({
-            ...chunks[i],
-            embedding,
-            url: `https://www.youtube.com/watch?v=${vid}`,
-            id: randomUUID(),
-          } satisfies EmbeddedChunk),
-      )
-      await writeFile(outPath, JSON.stringify(arr))
-    }
-  },
-  {
-    timeout: 1_000_000,
-  },
-)
+test("embed youtube", () => embedChunks(YOUTUBE_DIR), { timeout: 1_000_000 })

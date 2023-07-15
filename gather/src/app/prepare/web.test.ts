@@ -4,7 +4,7 @@ import { join } from "path"
 import { test } from "vitest"
 import { ResponseError } from "../../../../gen/openai"
 import { exists } from "../../lib/node"
-import { batchArray } from "../../lib/ts"
+import { chunkArray } from "../../lib/ts"
 import { mkOpenAI, openAiEmbed } from "../OpenAI"
 
 const CHUNKS_DIR = "data/web/chunks/"
@@ -107,7 +107,7 @@ test(
       const chunks: ReadonlyArray<WebChunk> = JSON.parse(s)
 
       const url = getURL(file)
-      const max3k = batchArray(
+      const max3k = chunkArray(
         chunks.map(x => x.excerpt),
         2000,
       )
