@@ -20,7 +20,7 @@ const DATA_DIR = "data/"
 test.skip(
   "clean embeddings",
   async () => {
-    for (const dir of ["articles", "books", "web", "youtube"]) {
+    for (const dir of ["books", "web", "youtube"]) {
       const embeddingsDir = join(DATA_DIR, dir, "embeddings")
       for (const file of await readdir(embeddingsDir)) {
         const jsonPath = join(embeddingsDir, file)
