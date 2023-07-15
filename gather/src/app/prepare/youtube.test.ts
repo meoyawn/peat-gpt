@@ -6,9 +6,7 @@ import { exists } from "../../lib/node"
 import { removeExtension } from "../../lib/path"
 import { joinEvery, parseTTML } from "../../lib/ttml"
 import { mkOpenAI, openAiEmbed } from "../OpenAI"
-
-const CHUNK_MILLIS = /** 4 minutes */ 240_000
-const OVERLAP_MILLIS = /** 30 seconds */ 30_000
+import chunking from "./chunking.json"
 
 interface PreparedChunk {
   excerpt: string
@@ -18,28 +16,29 @@ interface PreparedChunk {
 
 const chunkSubs = async (
   ttmlPath: string,
-): Promise<ReadonlyArray<PreparedChunk>> =>
-  joinEvery(
-    parseTTML(await readFile(ttmlPath, "utf-8")).tt.body.div.p,
-    CHUNK_MILLIS,
-    OVERLAP_MILLIS,
-  ).map(x => ({
-    excerpt: x.text,
-    begin: x.begin,
-    end: x.end,
-  }))
+): Promise<ReadonlyArray<PreparedChunk>> => {
+  const text = await readFile(ttmlPath, "utf-8")
+  const { overlapMillis, chunkLenMillis } = chunking.youtube
+  return joinEvery(parseTTML(text).tt.body.div.p, chunkLenMillis, overlapMillis)
+    .filter(x => x.text.length > chunking.minChunkLen)
+    .map(x => ({
+      excerpt: x.text,
+      begin: x.begin,
+      end: x.end,
+    }))
+}
+
+const YOUTUBE_DIR = "data/youtube/"
 
 test("chunk youtube", async () => {
-  const inp = "data/youtube/"
-
-  const out = join(inp, "chunks")
+  const out = join(YOUTUBE_DIR, "chunks")
   await mkdir(out, { recursive: true })
 
-  const list = await readdir(inp)
-  for (const name of list.filter(x => x.endsWith(".ttml"))) {
-    const chunks = await chunkSubs(join(inp, name))
+  const list = await readdir(YOUTUBE_DIR)
+  for (const ttmlFile of list.filter(x => x.endsWith(".ttml"))) {
+    const chunks = await chunkSubs(join(YOUTUBE_DIR, ttmlFile))
     await writeFile(
-      join(out, `${removeExtension(name)}.json`),
+      join(out, `${removeExtension(ttmlFile)}.json`),
       JSON.stringify(chunks, null, 2),
     )
   }
@@ -68,6 +67,7 @@ test(
       const text = await readFile(join(inp, file), "utf-8")
       const chunks: ReadonlyArray<PreparedChunk> = JSON.parse(text)
 
+      console.log(vid, chunks.length)
       const { data } = await openAiEmbed(
         api,
         chunks.map(x => x.excerpt),

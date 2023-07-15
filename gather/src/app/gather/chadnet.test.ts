@@ -1,13 +1,14 @@
 import { mkdir, writeFile } from "fs/promises"
-import { join } from "src/lib/path"
+import { join } from "path"
 import { fromHtml } from "hast-util-from-html"
 import { selectAll } from "hast-util-select"
 import { expect, test } from "vitest"
 import { getHref } from "../../lib/html"
 import { exists } from "../../lib/node"
+import { filenameWithoutExtension } from "../../lib/path"
 import { splitParagraphs, splitSentences } from "../../lib/text"
 import { tikaText } from "../../lib/tika"
-import { filenameWithoutExtension } from "../../lib/path"
+import chunking from "../prepare/chunking.json"
 import inputs from "./inputs.json"
 
 interface Chunk {
@@ -60,7 +61,7 @@ test(
       const text = await tikaText(url)
       const chunks = splitParagraphs(text).flatMap(p =>
         splitSentences(p.text, 32_000)
-          .filter(x => x.length > 200)
+          .filter(x => x.length > chunking.minChunkLen)
           .map(excerpt => ({ excerpt, url, page: p.page } satisfies Chunk)),
       )
 

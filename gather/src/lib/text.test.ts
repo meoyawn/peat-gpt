@@ -1,7 +1,13 @@
 import { describe, expect, test } from "vitest"
-import { splitParagraphs, splitSentences } from "./text"
+import { splitParagraphs, splitSentences, splitWords } from "./text"
 
 describe("splitSentences", () => {
+  test("quoted sentence", () => {
+    expect(
+      splitSentences(`He saw her. "She's hot." That was his first thought.`, 5),
+    ).toEqual(["hello.", "world"])
+  })
+
   test("split on sentence max len", () => {
     expect(splitSentences("hello. world", 10)).toEqual(["hello.", "world"])
     expect(splitSentences("hello. world", 20)).toEqual(["hello. world"])
@@ -70,5 +76,50 @@ describe("splitParagraphs", () => {
       { text: "This is another paragraph.", page: 2 },
       { text: "This is yet another paragraph.", page: 3 },
     ])
+  })
+})
+
+describe("splitWords", () => {
+  test("simple", () => {
+    expect(splitWords("hello world", 1, 0)).toEqual(["hello", "world"])
+    expect(splitWords("hello world", 20, 0)).toEqual(["hello world"])
+  })
+
+  test("overlapped", () => {
+    expect(() => splitWords("hello world", 0, 1)).toThrowError()
+    expect(splitWords("hello world", 1, 1)).toEqual(["hello", "hello world"])
+    expect(splitWords("hello world", 5, 5)).toEqual(["hello", "hello world"])
+    expect(splitWords("one two three", 1, 1)).toEqual([
+      "one",
+      "one two",
+      "two three",
+    ])
+  })
+
+  test("empty string", () => {
+    expect(splitWords("", 1, 0)).toEqual([])
+    expect(splitWords("", 5, 5)).toEqual([])
+  })
+
+  test("string with only whitespaces", () => {
+    expect(splitWords("     ", 1, 0)).toEqual([""])
+    expect(splitWords("     ", 2, 1)).toEqual([""])
+  })
+
+  test("string with a single word", () => {
+    expect(splitWords("word", 1, 0)).toEqual(["word"])
+    expect(splitWords("word", 5, 5)).toEqual(["word"])
+  })
+
+  test("chunkLen or overlapLen exceeds text length", () => {
+    expect(splitWords("short", 10, 0)).toEqual(["short"])
+    expect(() => splitWords("short", 0, 10)).toThrowError()
+    expect(splitWords("short", 10, 10)).toEqual(["short"])
+  })
+
+  test("negative chunkLen or overlapLen", () => {
+    expect(() => splitWords("hello world", -1, 0)).toThrowError()
+    expect(() => splitWords("hello world", 0, -1)).toThrowError()
+    expect(() => splitWords("hello world", -1, -1)).toThrowError()
   })
 })

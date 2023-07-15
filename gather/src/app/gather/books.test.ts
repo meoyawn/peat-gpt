@@ -1,5 +1,5 @@
 import { writeFile } from "fs/promises"
-import { join } from "src/lib/path"
+import { join } from "path"
 import { test } from "vitest"
 import { exists } from "../../lib/node"
 import { tikaText } from "../../lib/tika"

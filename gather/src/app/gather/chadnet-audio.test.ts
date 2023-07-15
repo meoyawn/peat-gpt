@@ -1,5 +1,5 @@
 import { mkdir, readdir, readFile, writeFile } from "fs/promises"
-import { basename, extname, join } from "src/lib/path"
+import { basename, extname, join } from "path"
 import { fromHtml } from "hast-util-from-html"
 import { selectAll } from "hast-util-select"
 import { toText } from "hast-util-to-text"
@@ -7,9 +7,10 @@ import { test } from "vitest"
 import { ResponseError } from "../../../../gen/openai"
 import { getHref } from "../../lib/html"
 import { cliText, exists } from "../../lib/node"
-import { splitSentences } from "../../lib/text"
-import { mkOpenAI } from "../OpenAI"
 import { filenameWithoutExtension } from "../../lib/path"
+import { splitWords } from "../../lib/text"
+import { mkOpenAI } from "../OpenAI"
+import chunking from "../prepare/chunking.json"
 import inputs from "./inputs.json"
 
 async function* fetchMP3s(): AsyncGenerator<readonly [URL, string], void> {
@@ -62,12 +63,12 @@ interface TranscriptChunk {
 const TRANSCRIPT_CHUNKS_DIR = join(AUDIO_DIR, "chunks")
 
 test("chunk transcripts", async () => {
-  throw new Error("TODO overlapping")
-
   const downloadsFiles = await readdir(DOWNLOADS_DATA_DIR)
   const localFiles = await readdir(TRANSCRIPTS_DIR)
 
   await mkdir(TRANSCRIPT_CHUNKS_DIR, { recursive: true })
+
+  const { chunkLen, overlapLen } = chunking.mp3Transcripts
 
   for await (const [url, title] of fetchMP3s()) {
     const outPath = join(
@@ -77,10 +78,13 @@ test("chunk transcripts", async () => {
     if (await exists(outPath)) continue
 
     const inPath = find(url, downloadsFiles, localFiles)
+    console.log(inPath)
+
     const text = await readFile(inPath, "utf8")
-    const chunks = splitSentences(text, 2_000).map(
-      excerpt => ({ url, title, excerpt } satisfies TranscriptChunk),
-    )
+    const chunks = splitWords(text, chunkLen, overlapLen)
+      .filter(x => x.length > chunking.minChunkLen)
+      .map(excerpt => ({ url, title, excerpt } satisfies TranscriptChunk))
+
     await writeFile(outPath, JSON.stringify(chunks, null, 2))
   }
 })
@@ -167,7 +171,7 @@ test(
 )
 
 test(
-  "transcribe chunks",
+  "transcribe audio chunks",
   async () => {
     const openAIApi = mkOpenAI()
 

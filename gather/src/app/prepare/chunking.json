@@ -1,0 +1,11 @@
+{
+  "minChunkLen": 200,
+  "youtube": {
+    "chunkLenMillis": 240000,
+    "overlapMillis": 60000
+  },
+  "mp3Transcripts": {
+    "chunkLen": 2800,
+    "overlapLen": 700
+  }
+}

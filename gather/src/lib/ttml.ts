@@ -20,7 +20,7 @@ export interface TTML {
 
 export const parseTTML = (text: string): TTML => xmlParser.parse(text) as TTML
 
-const append = (
+const appendTo = (
   accum: TtmlCue,
   cue: Readonly<TtmlCue>,
   separator: string,
@@ -56,7 +56,7 @@ export const joinEvery = (
   overlapMillis: number,
   separator = " ",
 ): ReadonlyArray<Readonly<TtmlCue>> => {
-  const out = Array<TtmlCue>(0)
+  const out = Array<Readonly<TtmlCue>>(0)
   if (!cues.length) return out
 
   let accum: TtmlCue = { ...cues[0] }
@@ -69,11 +69,11 @@ export const joinEvery = (
     const gap = ttmlToMillis(cue.end) - ttmlToMillis(accum.begin)
     if (gap <= durationMillis) {
       // accum
-      append(accum, cue, separator)
+      appendTo(accum, cue, separator)
 
       if (durationMillis - gap < overlapMillis) {
         if (overlap) {
-          append(overlap, cue, separator)
+          appendTo(overlap, cue, separator)
         } else {
           overlap = { ...cue }
         }
@@ -84,7 +84,7 @@ export const joinEvery = (
 
       if (overlap) {
         accum = { ...overlap }
-        append(accum, cue, separator)
+        appendTo(accum, cue, separator)
         overlap = undefined
       } else {
         accum = { ...cue }

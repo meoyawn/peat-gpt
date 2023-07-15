@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from "fs/promises"
-import { join } from "src/lib/path"
+import { join } from "path"
 import { fromHtml } from "hast-util-from-html"
 import { select, selectAll } from "hast-util-select"
 import { toText } from "hast-util-to-text"

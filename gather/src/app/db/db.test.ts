@@ -46,7 +46,7 @@ test(
 
 const pineconeAPI = mkPinecone()
 
-test.skip(
+test(
   "delete youtube",
   async () => {
     const embeddingsDir = join(DATA_DIR, "youtube", "embeddings")
@@ -54,7 +54,8 @@ test.skip(
       const jsonPath = join(embeddingsDir, file)
       const s = await readFile(jsonPath, "utf-8")
       const arr: ReadonlyArray<Embedded> = JSON.parse(s)
-      console.log(await pineconeAPI._delete({ ids: arr.map(x => x.id) }))
+      console.log(jsonPath)
+      await pineconeAPI._delete({ ids: arr.map(x => x.id) })
     }
   },
   { timeout: 1_000_000 },
