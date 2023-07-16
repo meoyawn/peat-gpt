@@ -1,6 +1,6 @@
-import { type Message } from "../../../gather/src/app/bot"
 import React, { useEffect, useRef, useState, type JSX } from "react"
 import { useForm } from "react-hook-form"
+import { type Message } from "../../../gather/src/app/bot"
 import { md2Html } from "./markdown"
 
 interface Values {
@@ -44,17 +44,23 @@ const TypingSVG = (): JSX.Element => (
   </svg>
 )
 
-const Msg = (props: { x: Message }) => (
+const Msg = ({ assistant, user }: Message) => (
   <>
     <p>
       <b>User: </b>
-      <span>{props.x.user}</span>
+      <a
+        href={`/api/chat?search=${encodeURIComponent(user)}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        {user}
+      </a>
     </p>
 
-    {props.x.assistant ? (
+    {assistant ? (
       <div>
         <hr className="mb-0 mt-0" />
-        <div dangerouslySetInnerHTML={{ __html: md2Html(props.x.assistant) }} />
+        <div dangerouslySetInnerHTML={{ __html: md2Html(assistant) }} />
         <hr className="mb-0 mt-0" />
       </div>
     ) : (
@@ -85,7 +91,7 @@ export const Chat = (): JSX.Element => {
         </h4>
 
         {messages.map(x => (
-          <Msg key={x.id} x={x} />
+          <Msg key={x.id} {...x} />
         ))}
         <div ref={chatBottom} />
       </div>
@@ -104,6 +110,7 @@ export const Chat = (): JSX.Element => {
             { id: crypto.randomUUID(), user: values.message },
           ]
           setMessages(newMessages)
+
           const r = await fetch("/api/chat", {
             method: "POST",
             body: JSON.stringify(newMessages),
@@ -120,6 +127,7 @@ export const Chat = (): JSX.Element => {
           autoFocus
           className="flex-grow rounded-l-md"
           type="text"
+          placeholder="ex. Daily aspirin dose"
           {...register("message", { minLength: 1, required: true })}
         />
 

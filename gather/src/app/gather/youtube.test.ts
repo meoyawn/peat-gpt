@@ -3,6 +3,7 @@ import { join } from "path"
 import { test } from "vitest"
 import { exists } from "../../lib/node"
 import { removeExtension } from "../../lib/path"
+import { arrayPromise } from "../../lib/ts"
 import { Info, ytDlpInfo, ytDlpPlaylist } from "../../lib/yt-dlp"
 import inputs from "./inputs.json"
 
@@ -50,14 +51,6 @@ async function* youtubeURLs(): AsyncGenerator<string, void> {
   }
 }
 
-async function gen2array<T>(gen: AsyncIterable<T>): Promise<ReadonlyArray<T>> {
-  const out = Array<T>(0)
-  for await (const x of gen) {
-    out.push(x)
-  }
-  return out
-}
-
 test.skip(
   "missing URLs",
   async () => {
@@ -66,7 +59,7 @@ test.skip(
       .filter(x => x.endsWith(".json"))
       .map(removeExtension)
 
-    const remote = await gen2array(youtubeURLs())
+    const remote = await arrayPromise(youtubeURLs())
     const remoteVids = new Set(remote.map(vid))
 
     console.log(

@@ -8,3 +8,13 @@ export const chunkArray = <T>(
   }
   return ret
 }
+
+export async function arrayPromise<T>(
+  gen: AsyncIterable<T>,
+): Promise<ReadonlyArray<T>> {
+  const out = Array<T>(0)
+  for await (const x of gen) {
+    out.push(x)
+  }
+  return out
+}

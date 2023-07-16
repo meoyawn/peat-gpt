@@ -5,8 +5,15 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "remix build",
+    "bld": "remix build",
+    "chk": "concurrently bun:chk:*",
+    "chk:lint": "eslint app/ --fix",
+    "chk:test": "bun test",
+    "chk:types": "tsc",
+    "clean": "rm -rf .cache/ functions/ public/build/",
+    "deploy": "bun chk && bun clean && bun bld && bun pagesDeploy && say remix deployed",
     "dev": "remix dev --no-restart -c \"bun run start\"",
+    "pagesDeploy": "wrangler pages deploy ./public --commit-dirty=true --env production",
     "start": "wrangler pages dev --compatibility-date=2023-06-21 ./public",
     "typecheck": "tsc"
   },
@@ -36,6 +43,7 @@
     "@types/react": "^18.0.35",
     "@types/react-dom": "^18.0.11",
     "autoprefixer": "^10.4.14",
+    "concurrently": "^8.2.0",
     "postcss": "^8.4.25",
     "tailwindcss": "^3.3.2",
     "wrangler": "^3.1.1"
