@@ -1,6 +1,5 @@
 /** @type {import("@remix-run/dev").AppConfig} */
 const cfg = {
-  devServerBroadcastDelay: 1000,
   ignoredRouteFiles: ["**/.*"],
   server: "./server.ts",
   serverBuildPath: "functions/[[path]].js",
@@ -24,6 +23,13 @@ const cfg = {
   },
   tailwind: true,
   postcss: true,
+  serverNodeBuiltinsPolyfill: {
+    modules: {
+      path: "empty",
+      process: "empty",
+      url: "empty",
+    },
+  },
 }
 
 export default cfg
