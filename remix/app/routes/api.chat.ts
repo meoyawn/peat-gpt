@@ -17,6 +17,7 @@ const getMemory = (context: AppLoadContext): AiMemory => {
   )
 }
 
+// noinspection JSUnusedGlobalSymbols
 export const loader = async ({
   context,
   request,

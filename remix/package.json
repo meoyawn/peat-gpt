@@ -12,7 +12,7 @@
     "chk:types": "tsc",
     "clean": "rm -rf .cache/ functions/ public/build/",
     "deploy": "bun chk && bun clean && bun bld && bun pagesDeploy && say remix deployed",
-    "dev": "remix dev --no-restart -c \"bun run start\"",
+    "dev": "remix dev -c \"bun run start\"",
     "pagesDeploy": "wrangler pages deploy ./public --commit-dirty=true --env production",
     "start": "wrangler pages dev --compatibility-date=2023-06-21 ./public",
     "typecheck": "tsc"

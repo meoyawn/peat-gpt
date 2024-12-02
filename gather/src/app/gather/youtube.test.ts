@@ -1,6 +1,6 @@
 import { readdir, readFile, rm, writeFile } from "fs/promises"
 import { join } from "path"
-import { test } from "vitest"
+import { expect, test } from "vitest"
 import { exists } from "../../lib/node"
 import { removeExtension } from "../../lib/path"
 import { arrayPromise } from "../../lib/ts"
@@ -10,13 +10,13 @@ import inputs from "./inputs.json"
 const subtitleURL = (info: Info, lang: "en", ext: "ttml"): string | undefined =>
   info.automatic_captions[lang]?.find(x => x.ext === ext)?.url
 
-const vid = (videoURL: string): string => {
+const vid = (videoURL: `https://${string}`): string => {
   const v = new URL(videoURL).searchParams.get("v")
   if (!v) throw new Error(videoURL)
   return v
 }
 
-const writeSubs = async (videoURL: string, dir: string) => {
+const writeSubs = async (videoURL: HttpURL, dir: string) => {
   const v = vid(videoURL)
 
   if (await exists(join(dir, `${v}.json`))) return
@@ -36,17 +36,51 @@ const writeSubs = async (videoURL: string, dir: string) => {
 
 const YOUTUBE_DIR = "data/youtube/"
 
-async function* youtubeURLs(): AsyncGenerator<string, void> {
-  const { lists, minDurationSeconds, extra } = inputs.youtube
-  for (const url of extra) {
-    yield url
+type HttpURL = `https://${string}`
+
+async function* videoURLs(
+  listURL: HttpURL,
+  minDurationSeconds: number,
+): AsyncGenerator<HttpURL> {
+  const { entries } = await ytDlpPlaylist(listURL)
+  for (const { duration, url } of entries) {
+    if (duration >= minDurationSeconds) {
+      yield url as HttpURL
+    }
   }
+}
+
+const convertToArray = async <T>(ag: AsyncGenerator<T>): Promise<Array<T>> => {
+  const result: Array<T> = []
+  for await (const v of ag) {
+    result.push(v)
+  }
+  return result
+}
+
+test(
+  "rian stone",
+  async () => {
+    expect(
+      await convertToArray(videoURLs("https://www.youtube.com/@RianStone", 1)),
+    ).toHaveLength(1)
+  },
+  { timeout: 60_000 },
+)
+
+async function* youtubeURLs(): AsyncGenerator<HttpURL> {
+  const { lists, minDurationSeconds, extra } = inputs.youtube
+
+  for (const url of extra) {
+    yield url as HttpURL
+  }
+
   for (const listURL of lists) {
-    const { entries } = await ytDlpPlaylist(listURL)
-    for (const { duration, url } of entries) {
-      if (duration >= minDurationSeconds) {
-        yield url
-      }
+    for await (const videoURL of videoURLs(
+      listURL as HttpURL,
+      minDurationSeconds,
+    )) {
+      yield videoURL
     }
   }
 }
