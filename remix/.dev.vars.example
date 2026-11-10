@@ -1,0 +1,4 @@
+# Cloudflare Pages server-side bindings. Supply your own credentials locally.
+VITE_OPENAPI_KEY=
+VITE_PINECONE_BASE=
+VITE_PINECONE_KEY=
